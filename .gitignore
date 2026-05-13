@@ -1,0 +1,81 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Media & Static
+media/
+staticfiles/
+
+# Environment Variables
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# PyTorch / ML
+*.pt
+*.pth
+*.ckpt
+*.onnx
+
+# Cache
+.cache/
+.pytest_cache/
+.mypy_cache/
+
+# Node.js
+node_modules/
+
+# Build files
+dist/
+build/
+
+# Celery
+celerybeat-schedule
+
+# Redis dump
+dump.rdb
+
+# Coverage
+.coverage
+htmlcov/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# Kaggle
+kaggle.json
+
+# TensorBoard
+runs/
+
+# CUDA
+*.cu.o
+checkpoints/*

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  <title>Recognition - Face Recognition</title>
+{% endblock %}
+
+
+{% block content %}
+  <a href="{% url 'home' %}" class="back-btn">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M15 18l-6-6 6-6"/>
+    </svg>
+  </a>
+
+  <div class="container">
+    <h1 class="title">Recognition</h1>
+    
+    <div class="camera-wrapper">
+      <video id="camera" class="camera-view" autoplay playsinline></video>
+    </div>
+    
+    <div id="status" class="status">Đang quét khuôn mặt...</div>
+    
+    <div class="camera-controls">
+      <button class="control-btn stop-btn" onclick="stopCamera()">
+        <svg viewBox="0 0 24 24">
+          <rect x="6" y="6" width="12" height="12" rx="2"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block js %}
+  <script>
+    initCamera('camera');
+    startRecognition();
+  </script>
+{% endblock %}
