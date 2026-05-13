@@ -69,8 +69,30 @@ let uploadedImages = [];
  */
 function previewImage(event) {
   const files = event.target.files;
-  if (!files.length) return;
-  
+  const btn = document.getElementById('register-btn');
+
+  if (!files.length) {
+    if (btn) btn.disabled = true;
+    return;
+  }
+
+  const count = files.length;
+  const valid = count >= 2 && count <= 5;
+  if (btn) btn.style.display = valid ? 'flex' : 'none';
+
+  const statusEl = document.getElementById('status');
+  if (statusEl) {
+    if (count < 2) {
+      statusEl.textContent = `Vui lòng chọn ít nhất 2 ảnh (đang chọn ${count})`;
+      statusEl.style.display = 'block';
+    } else if (count > 5) {
+      statusEl.textContent = `Tối đa 5 ảnh (đang chọn ${count})`;
+      statusEl.style.display = 'block';
+    } else {
+      statusEl.style.display = 'none';
+    }
+  }
+
   const icon = document.getElementById('upload-icon');
   const text = document.getElementById('upload-text');
   const preview = document.getElementById('preview');
