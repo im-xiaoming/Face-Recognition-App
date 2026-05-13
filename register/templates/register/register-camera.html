@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  <title>Camera Register - Face Recognition</title>
+{% endblock %}
+
+
+{% block content %}
+  <a href="{% url 'register' %}" class="back-btn">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M15 18l-6-6 6-6"/>
+    </svg>
+  </a>
+
+  <div class="container">
+    <h1 class="title">Register Face</h1>
+    
+    <div class="camera-wrapper">
+      <video id="camera" class="camera-view" autoplay playsinline></video>
+      <div class="face-guide"></div>
+    </div>
+    
+    <p class="hint">Đặt khuôn mặt vào khung oval</p>
+    
+    <div class="camera-controls">
+      <button class="control-btn capture-btn" onclick="capturePhoto()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div id="status" class="status" style="display: none;"></div>
+  </div>
+{% endblock %}
+
+{% block js %}
+  <script>
+    initCamera('camera');
+  </script>
+{% endblock %}

@@ -40,7 +40,9 @@
     </div>
 
     </form>
-
+    {% if error %}
+      <p style="color: #ff0000">{{ error }}</p>
+    {% endif %}
     <div id="status" class="status" style="display: none;"></div>
   </div>
 {% endblock %}
