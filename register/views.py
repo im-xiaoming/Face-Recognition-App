@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.shortcuts import render, redirect
+from .forms import UserForm
 
 
 def register(request):
@@ -51,30 +52,26 @@ def register_info(request):
         return redirect('register-upload')
 
     if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
-        email = request.POST.get('email', '').strip()
-        dob = request.POST.get('dob', '').strip()
+        form = UserForm(request.POST)
 
-        if not name or not email or not dob:
-            return render(request, 'register/register-info.html', {
-                'error': 'Vui long dien day du thong tin.',
-                'name': name,
-                'email': email,
-                'dob': dob,
-            })
+        if form.is_valid():
+            form.save()
+            
+            # Save images
+            temp_dir = Path(settings.BASE_DIR) / 'media' / 'temp' / temp_key
+            final_dir = Path(settings.BASE_DIR) / 'media' / 'registered_faces' / temp_key
 
-        temp_dir = Path(settings.BASE_DIR) / 'media' / 'temp' / temp_key
-        final_dir = Path(settings.BASE_DIR) / 'media' / 'registered_faces' / temp_key
+            if temp_dir.exists():
+                shutil.move(str(temp_dir), str(final_dir))
 
-        if temp_dir.exists():
-            shutil.move(str(temp_dir), str(final_dir))
+            del request.session['temp_upload_key']
+            
+            return redirect('home')
+    
+    else:
+        form = UserForm()
 
-        # TODO: save name, email, dob to model
-
-        del request.session['temp_upload_key']
-        return render(request, 'register/register-info.html', {'success': True})
-
-    return render(request, 'register/register-info.html')
+    return render(request, 'register/register-info.html', {'form': form})
 
 
 def camera(request):

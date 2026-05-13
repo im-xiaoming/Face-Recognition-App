@@ -16,7 +16,7 @@
   <div class="container">
     <h1 class="title">Upload Photo</h1>
 
-    <form method="post" action="{% url 'register-upload' %}" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
 
     <div class="upload-area" onclick="document.getElementById('file-input').click()">
