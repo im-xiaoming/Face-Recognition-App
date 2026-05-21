@@ -53,8 +53,8 @@ def _get_model():
             transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
         ])
 
-    model = get_model('ir_50', device)
-    load_weight(model, Path(settings.BASE_DIR) / 'checkpoints' / 'ir_50.pth')
+    model = get_model('ir_101', device)
+    load_weight(model, Path(settings.BASE_DIR) / 'checkpoints' / 'ir_101_best.pth')
     model.to(device)
 
     _cache['app'] = app
@@ -109,7 +109,7 @@ def estimate_pose_and_quality(aligned_face: np.ndarray, face_info, expected_pose
     results_dict["det_score"] = round(det_score, 4)
     if det_score < MIN_DET_SCORE:
         results_dict["reject"] = True
-        results_dict["reject_reason"] = f"Do tin cay phat hien thap (det_score={det_score:.2f})"
+        results_dict["reject_reason"] = f"Độ tin cậy phát hiện thấp (det_score={det_score:.2f})"
         return results_dict
 
     img_area = float(getattr(face_info, '_img_area', 0.0))
@@ -120,7 +120,7 @@ def estimate_pose_and_quality(aligned_face: np.ndarray, face_info, expected_pose
         results_dict["face_area_ratio"] = round(face_area_ratio, 4)
         if face_area_ratio < MIN_FACE_AREA_RATIO:
             results_dict["reject"] = True
-            results_dict["reject_reason"] = f"Khuon mat qua nho (ratio={face_area_ratio:.3f})"
+            results_dict["reject_reason"] = f"Khuôn mặt quá nhỏ (ratio={face_area_ratio:.3f})"
             return results_dict
 
     gray = cv2.cvtColor(aligned_face, cv2.COLOR_RGB2GRAY)
@@ -129,12 +129,12 @@ def estimate_pose_and_quality(aligned_face: np.ndarray, face_info, expected_pose
 
     if blur_score < MIN_BLUR_SCORE:
         results_dict["reject"] = True
-        results_dict["reject_reason"] = f"Anh qua mo (blur={blur_score:.1f})"
+        results_dict["reject_reason"] = f"Ảnh quá mờ (blur={blur_score:.1f})"
         return results_dict
 
     if brightness < MIN_BRIGHTNESS or brightness > MAX_BRIGHTNESS:
         results_dict["reject"] = True
-        results_dict["reject_reason"] = f"Anh sang khong dat (brightness={brightness:.1f})"
+        results_dict["reject_reason"] = f"Ánh sáng không đạt (brightness={brightness:.1f})"
         return results_dict
 
     quality = min(blur_score / 200.0, 1.0) * (1 - abs(brightness - 127) / 127)
@@ -154,19 +154,19 @@ def estimate_pose_and_quality(aligned_face: np.ndarray, face_info, expected_pose
         if not (limits['yaw'][0] <= yaw <= limits['yaw'][1]):
             results_dict["reject"] = True
             results_dict["reject_reason"] = (
-                f"Yaw khong khop pose '{expected_pose}' (yaw={yaw:.1f})"
+                f"Yaw không khớp pose '{expected_pose}' (yaw={yaw:.1f})"
             )
             return results_dict
         if not (limits['pitch'][0] <= pitch <= limits['pitch'][1]):
             results_dict["reject"] = True
             results_dict["reject_reason"] = (
-                f"Pitch ngoai gioi han pose '{expected_pose}' (pitch={pitch:.1f})"
+                f"Pitch ngoài giới hạn pose '{expected_pose}' (pitch={pitch:.1f})"
             )
             return results_dict
         if not (limits['roll'][0] <= roll <= limits['roll'][1]):
             results_dict["reject"] = True
             results_dict["reject_reason"] = (
-                f"Roll ngoai gioi han pose '{expected_pose}' (roll={roll:.1f})"
+                f"Roll ngoài giới hạn pose '{expected_pose}' (roll={roll:.1f})"
             )
             return results_dict
 

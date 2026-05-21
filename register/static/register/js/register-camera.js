@@ -65,8 +65,8 @@
       hint: (f) => {
         if (Math.abs(f.roll) > SIDE_ROLL_LIMIT_RAD) return 'Giữ đầu thẳng, chỉ quay ngang';
         if (Math.abs(f.pitch) > SIDE_PITCH_LIMIT) return 'Giữ đầu ngang, đừng cúi em';
-        if (f.yaw < SIDE_YAW_LIMIT) return 'Quay thếm sang trái em';
-        if (f.yaw > SIDE_YAW_MAX) return 'Quay ít lài một chút em';
+        if (f.yaw < SIDE_YAW_LIMIT) return 'Quay thêm sang trái em';
+        if (f.yaw > SIDE_YAW_MAX) return 'Quay ít lại một chút em';
         return 'Quay đầu sang trái';
       },
     },
@@ -83,8 +83,8 @@
         if (Math.abs(f.roll) > SIDE_ROLL_LIMIT_RAD) return 'Giữ đầu thẳng, chỉ quay ngang';
         if (Math.abs(f.pitch) > SIDE_PITCH_LIMIT) return 'Giữ đầu ngang, đừng cúi em';
         if (f.yaw > -SIDE_YAW_LIMIT) return 'Quay thêm sang phải đi em';
-        if (f.yaw < -SIDE_YAW_MAX) return 'Quay ít lại mot chút đi em';
-        return 'Quay đầu sang phai đi em';
+        if (f.yaw < -SIDE_YAW_MAX) return 'Quay ít lại một chút đi em';
+        return 'Quay đầu sang phải đi em';
       },
     },
   ];
@@ -136,7 +136,7 @@
     if (video.videoWidth && video.videoHeight) return Promise.resolve();
     return new Promise((resolve, reject) => {
       const timeout = window.setTimeout(() => {
-        reject(new Error('Khong the mo camera'));
+        reject(new Error('Không thể mở camera'));
       }, 5000);
 
       video.addEventListener('loadedmetadata', () => {

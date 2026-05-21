@@ -104,7 +104,7 @@ def recognize_frame(image_file) -> dict:
         if quality['reject']:
             return {
                 'status': 'reject',
-                'message': quality.get('reject_reason') or 'Anh khong dat yeu cau.',
+                'message': quality.get('reject_reason') or 'Ảnh không đạt yêu cầu.',
                 'quality': quality,
             }
 

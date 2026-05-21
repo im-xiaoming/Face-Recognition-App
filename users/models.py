@@ -13,6 +13,7 @@ class FacePose(models.TextChoices):
 class UserModel(models.Model):
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
+    cultivation = models.CharField(max_length=255, blank=True)
     dob = models.DateField()
 
     def __str__(self):

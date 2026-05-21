@@ -17,7 +17,7 @@ def recognition_api(request):
     if not image:
         return JsonResponse({
             'status': 'error',
-            'message': 'Thieu frame camera.',
+            'message': 'Thiếu frame camera.',
         }, status=400)
 
     return JsonResponse(recognize_frame(image))

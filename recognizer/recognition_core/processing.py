@@ -41,14 +41,14 @@ def preprocess_face(image_path: str) -> tuple[np.ndarray, dict]:
 
     img = cv2.imread(image_path)
     if img is None:
-        raise ValueError("Khong doc duoc anh.")
+        raise ValueError("Không đọc được ảnh.")
 
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     faces = app.get(img_rgb)
     if len(faces) == 0:
-        raise ValueError("Khong phat hien khuon mat nao.")
+        raise ValueError("Không phát hiện khuôn mặt nào.")
     if len(faces) > 1:
-        raise ValueError("Chi duoc co mot khuon mat trong anh.")
+        raise ValueError("Chỉ được có một khuôn mặt trong ảnh.")
 
     img_area = img_rgb.shape[0] * img_rgb.shape[1]
 
@@ -82,7 +82,7 @@ def estimate_pose_and_quality(aligned_face: np.ndarray, face_info) -> dict:
     result["det_score"] = round(det_score, 4)
     if det_score < MIN_DET_SCORE:
         result["reject"] = True
-        result["reject_reason"] = f"Do tin cay phat hien thap (det_score={det_score:.2f})"
+        result["reject_reason"] = f"Độ tin cậy phát hiện thấp (det_score={det_score:.2f})"
         return result
 
     img_area = float(getattr(face_info, '_img_area', 0.0))
@@ -93,7 +93,7 @@ def estimate_pose_and_quality(aligned_face: np.ndarray, face_info) -> dict:
         result["face_area_ratio"] = round(face_area_ratio, 4)
         if face_area_ratio < MIN_FACE_AREA_RATIO:
             result["reject"] = True
-            result["reject_reason"] = f"Khuon mat qua nho (ratio={face_area_ratio:.3f})"
+            result["reject_reason"] = f"Khuôn mặt quá nhỏ (ratio={face_area_ratio:.3f})"
             return result
 
     gray = cv2.cvtColor(aligned_face, cv2.COLOR_RGB2GRAY)
@@ -102,12 +102,12 @@ def estimate_pose_and_quality(aligned_face: np.ndarray, face_info) -> dict:
 
     if blur_score < MIN_BLUR_SCORE:
         result["reject"] = True
-        result["reject_reason"] = f"Anh qua mo (blur={blur_score:.1f})"
+        result["reject_reason"] = f"Ảnh quá mờ (blur={blur_score:.1f})"
         return result
 
     if brightness < MIN_BRIGHTNESS or brightness > MAX_BRIGHTNESS:
         result["reject"] = True
-        result["reject_reason"] = f"Anh sang khong dat (brightness={brightness:.1f})"
+        result["reject_reason"] = f"Ánh sáng không đạt (brightness={brightness:.1f})"
         return result
 
     quality = min(blur_score / 200.0, 1.0) * (1 - abs(brightness - 127) / 127)

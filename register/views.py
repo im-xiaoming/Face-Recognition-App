@@ -26,7 +26,7 @@ def upload(request):
     files = request.FILES.getlist('images')
     if not (MIN_IMAGES <= len(files) <= MAX_IMAGES):
         return render(request, 'register/register-upload.html', {
-            'error': f'Can {MIN_IMAGES}-{MAX_IMAGES} anh, nhan duoc {len(files)}.'
+            'error': f'Cần {MIN_IMAGES}-{MAX_IMAGES} ảnh, nhận được {len(files)}.'
         })
 
     temp_key = uuid4().hex
@@ -43,7 +43,7 @@ def upload(request):
     if len(accepted) < MIN_IMAGES:
         shutil.rmtree(temp_dir, ignore_errors=True)
         return render(request, 'register/register-upload.html', {
-            'error': f'Chi {len(accepted)}/{len(raw_paths)} anh dat yeu cau. Vui long chon lai anh ro hon.'
+            'error': f'Chỉ {len(accepted)}/{len(raw_paths)} ảnh đạt yêu cầu. Vui lòng chọn lại ảnh rõ hơn.'
         })
 
     request.session['temp_upload_key'] = temp_key
@@ -89,7 +89,7 @@ def camera(request):
 
     if len(files) != len(CAMERA_POSES) or poses != CAMERA_POSES:
         return render(request, 'register/register-camera.html', {
-            'error': 'Can chup du 3 anh: nhin thang, quay trai, quay phai.'
+            'error': 'Cần chụp đủ 3 ảnh: nhìn thẳng, quay trái, quay phải.'
         })
 
     temp_key = uuid4().hex
@@ -106,7 +106,7 @@ def camera(request):
     if len(accepted) != len(CAMERA_POSES):
         shutil.rmtree(temp_dir, ignore_errors=True)
         return render(request, 'register/register-camera.html', {
-            'error': f'Chi {len(accepted)}/3 anh dat yeu cau. Vui long chup lai voi anh sang tot hon.'
+            'error': f'Chỉ {len(accepted)}/3 ảnh đạt yêu cầu. Vui lòng chụp lại với ảnh sáng tốt hơn.'
         })
 
     request.session['temp_upload_key'] = temp_key
