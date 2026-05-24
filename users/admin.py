@@ -4,9 +4,9 @@ from .models import UserModel, FaceImage, UserEmbedding
 # Register your models here.
 @admin.register(UserModel)
 class UserModelAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'email', 'dob']
+    list_display = ['id', 'name', 'cultivation', 'dob']
     list_filter = ['id', 'name']
-    search_fields = ['name', 'email']
+    search_fields = ['name', 'cultivation']
     
     
 @admin.register(FaceImage)

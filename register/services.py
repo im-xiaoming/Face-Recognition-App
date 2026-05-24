@@ -33,7 +33,7 @@ def _save_single_file(image, raw_dir: Path) -> Path:
     """Validate và lưu một file vào raw_dir. Raise ValueError nếu không hợp lệ."""
     extension = Path(image.name).suffix.lower()
     if extension not in ALLOWED_EXTENSIONS or not image.content_type.startswith('image/'):
-        raise ValueError('Only support JPG, PNG or WEBP.')
+        raise ValueError('Chỉ nhận linh ảnh định dạng JPG, PNG hoặc WEBP.')
 
     raw_path = raw_dir / f'{uuid4().hex}{extension}'
     with raw_path.open('wb+') as f:

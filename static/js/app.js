@@ -1,5 +1,5 @@
 /**
- * Face Recognition Demo - Main JavaScript
+ * Thiên Nhãn Linh Kính - Main JavaScript
  * Chứa các hàm dùng chung cho camera và xử lý ảnh
  */
 
@@ -17,8 +17,8 @@ async function initCamera(elementId) {
     const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
     const insecure = location.protocol !== 'https:' && !isLocal;
     const msg = insecure
-      ? 'Camera yêu cầu HTTPS trên iPhone/Safari. Hãy mở trang qua HTTPS (ngrok/cloudflared/runserver_plus).'
-      : 'Trình duyệt không hỗ trợ camera.';
+      ? 'Pháp kính cần HTTPS trên iPhone/Safari. Hãy mở trang qua HTTPS (ngrok/cloudflared/runserver_plus).'
+      : 'Trình duyệt này chưa mở được pháp kính.';
     showStatus(msg);
     throw new Error(msg);
   }
@@ -34,8 +34,8 @@ async function initCamera(elementId) {
     try { await video.play(); } catch (_) { /* iOS may need user gesture */ }
   } catch (err) {
     const reason = err && err.name === 'NotAllowedError'
-      ? 'Bạn đã từ chối quyền camera. Vào Settings → Safari → Camera để cấp lại.'
-      : `Không thể truy cập camera: ${err.message || err.name}`;
+      ? 'Bạn đã từ chối quyền pháp kính. Vào Cài đặt → Safari → Camera để cấp lại.'
+      : `Không thể khai mở pháp kính: ${err.message || err.name}`;
     showStatus(reason);
     throw err;
   }
@@ -53,7 +53,7 @@ function stopCamera() {
     clearInterval(recognitionInterval);
     recognitionInterval = null;
   }
-  showStatus('Đã dừng camera');
+  showStatus('Đã khép pháp kính');
 }
 
 /**
@@ -74,7 +74,7 @@ function capturePhoto() {
   faces.push({ id: Date.now(), image: imageData });
   localStorage.setItem('faces', JSON.stringify(faces));
   
-  showStatus('✓ Đã đăng ký khuôn mặt thành công!');
+  showStatus('Đã ghi danh linh diện thành công!');
   stopCamera();
 }
 
@@ -101,10 +101,10 @@ function previewImage(event) {
   const statusEl = document.getElementById('status');
   if (statusEl) {
     if (count < 2) {
-      statusEl.textContent = `Vui lòng chọn ít nhất 2 ảnh (đang chọn ${count})`;
+      statusEl.textContent = `Vui lòng chọn ít nhất 2 ảnh linh diện (đang chọn ${count})`;
       statusEl.style.display = 'block';
     } else if (count > 5) {
-      statusEl.textContent = `Tối đa 5 ảnh (đang chọn ${count})`;
+      statusEl.textContent = `Tối đa 5 ảnh linh diện (đang chọn ${count})`;
       statusEl.style.display = 'block';
     } else {
       statusEl.style.display = 'none';
@@ -151,7 +151,7 @@ function previewImage(event) {
  */
 function registerUploadedPhoto() {
   if (!uploadedImages.length) {
-    showStatus('Vui lòng chọn ảnh trước');
+    showStatus('Vui lòng chọn ảnh linh diện trước');
     return;
   }
   
@@ -162,7 +162,7 @@ function registerUploadedPhoto() {
   });
   localStorage.setItem('faces', JSON.stringify(faces));
   
-  showStatus('✓ Đã đăng ký ' + uploadedImages.length + ' khuôn mặt!');
+  showStatus('Đã ghi danh ' + uploadedImages.length + ' ảnh linh diện!');
   uploadedImages = [];
 }
 
@@ -174,7 +174,7 @@ function startRecognition() {
   const faces = JSON.parse(localStorage.getItem('faces') || '[]');
   
   if (faces.length === 0) {
-    showStatus('Chưa có khuôn mặt nào được đăng ký');
+    showStatus('Chưa có đạo hữu nào lưu danh');
     return;
   }
   
@@ -185,9 +185,9 @@ function startRecognition() {
     
     // Demo: Random kết quả nhận diện
     if (scanCount % 3 === 0 && faces.length > 0) {
-      showStatus('✓ Đã nhận diện: User #' + faces[0].id);
+      showStatus('Đã nhận diện đạo hữu #' + faces[0].id);
     } else {
-      showStatus('Đang quét khuôn mặt...');
+      showStatus('Thiên nhãn đang dò linh diện...');
     }
   }, 1000);
 }

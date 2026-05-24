@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-  <title>Upload Register - Face Recognition</title>
+  <title>Nạp Ảnh Linh Diện</title>
 {% endblock %}
 
 
@@ -14,7 +14,8 @@
   </a>
 
   <div class="container">
-    <h1 class="title">Upload Photo</h1>
+    <h1 class="title">Nạp Ảnh Linh Diện</h1>
+    <p class="subtitle">Chọn từ hai đến năm ảnh chân dung rõ sáng</p>
 
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
@@ -25,7 +26,7 @@
         <polyline points="17 8 12 3 7 8"/>
         <line x1="12" y1="3" x2="12" y2="15"/>
       </svg>
-      <span id="upload-text">Chọn ảnh khuôn mặt</span>
+      <span id="upload-text">Chọn ảnh linh diện</span>
       <img id="preview" style="display: none;">
     </div>
     

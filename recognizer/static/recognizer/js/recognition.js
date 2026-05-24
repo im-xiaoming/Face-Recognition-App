@@ -67,10 +67,10 @@
       label = `${result.user.name} (${pct}%)`;
     } else if (result.status === 'unknown') {
       color = '#ef4444';
-      label = 'Unknown';
+      label = 'Vô danh';
     } else if (result.status === 'reject') {
       color = '#f59e0b';
-      label = result.message || 'Low quality';
+      label = result.message || 'Linh ảnh chưa đạt';
     }
 
     const { x, y, w, h } = result.bbox;
@@ -108,8 +108,8 @@
       stableRecognition = { userId: null, count: 0 };
       const message = result.status === 'reject'
         ? result.message
-        : 'Unknown';
-      showStatus(message || 'Unknown');
+        : 'Chưa nhận ra đạo hữu';
+      showStatus(message || 'Chưa nhận ra đạo hữu');
       return;
     }
 
@@ -120,9 +120,9 @@
     }
 
     if (stableRecognition.count >= requiredFrames) {
-      showStatus(`✓ Đã nhận diện: ${result.user.name} (${Math.round(result.score * 100)}%)`);
+      showStatus(`Đã nhận diện đạo hữu: ${result.user.name} (${Math.round(result.score * 100)}%)`);
     } else {
-      showStatus('Đang xác nhận...');
+      showStatus('Đang đối chiếu linh tức...');
     }
   }
 
@@ -133,7 +133,7 @@
 
     const apiUrl = video.dataset.recognitionUrl || '/recognition/api/';
     stableRecognition = { userId: null, count: 0 };
-    showStatus('Đang quét khuôn mặt...');
+    showStatus('Thiên nhãn đang dò linh diện...');
     clearOverlay(overlay);
 
     recognitionInterval = setInterval(async () => {
@@ -144,7 +144,7 @@
         syncOverlaySize(video, overlay);
         const blob = await captureCameraFrame(video);
         if (!blob) {
-          showStatus('Đang mở camera...');
+          showStatus('Đang khai mở pháp kính...');
           return;
         }
 
@@ -160,7 +160,7 @@
       } catch (err) {
         stableRecognition = { userId: null, count: 0 };
         clearOverlay(overlay);
-        showStatus(`Lỗi nhận diện: ${err.message}`);
+        showStatus(`Thiên nhãn nhiễu loạn: ${err.message}`);
       } finally {
         recognitionBusy = false;
       }

@@ -12,12 +12,38 @@ class FacePose(models.TextChoices):
 
 class UserModel(models.Model):
     name = models.CharField(max_length=255)
-    email = models.EmailField(unique=True)
     cultivation = models.CharField(max_length=255, blank=True)
     dob = models.DateField()
 
     def __str__(self):
         return self.name
+
+    @property
+    def cultivation_label(self):
+        labels = {
+            'luyen_khi': 'Luyện Khí',
+            'truc_co': 'Trúc Cơ',
+            'ket_dan': 'Kết Đan',
+            'nguyen_anh': 'Nguyên Anh',
+            'hoa_than': 'Hóa Thần',
+            'anh_bien': 'Anh Biến',
+            'van_dinh': 'Vấn Đỉnh',
+            'am_hu': 'Âm Hư',
+            'duong_thuc': 'Dương Thực',
+            'khuy_niet': 'Khuy Niết',
+            'tinh_niet': 'Tịnh Niết',
+            'toai_niet': 'Toái Niết',
+            'thien_nhan_ngu_suy': 'Thiên Nhân Suy Kiếp',
+            'thien_nhan_suy_kiep': 'Thiên Nhân Suy Kiếp',
+            'khong_niet': 'Không Niết',
+            'khong_linh': 'Không Linh',
+            'khong_huyen': 'Không Huyền',
+            'khong_kiep': 'Không Kiếp',
+            'ban_bo_dap_thien': 'Bán Bộ Đạp Thiên',
+            'dap_thien_canh': 'Đạp Thiên Cảnh',
+            'dap_thien': 'Đạp Thiên Cảnh',
+        }
+        return labels.get(self.cultivation, self.cultivation)
 
 
 class FaceImage(models.Model):

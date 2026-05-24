@@ -119,7 +119,7 @@ def recognize_frame(image_file) -> dict:
         if not candidates:
             return {
                 'status': 'unknown',
-                'message': 'Khong tim thay ung vien phu hop.',
+                'message': 'Chưa tìm thấy đạo hữu phù hợp.',
                 'pose': detected_pose,
                 'quality': quality,
                 'bbox': bbox,
@@ -133,7 +133,7 @@ def recognize_frame(image_file) -> dict:
         if best['score'] < MIN_SCORE or margin < MIN_MARGIN:
             return {
                 'status': 'unknown',
-                'message': 'Unknown',
+                'message': 'Chưa nhận ra đạo hữu.',
                 'score': round(best['score'], 4),
                 'margin': round(margin, 4),
                 'pose': detected_pose,
@@ -148,7 +148,7 @@ def recognize_frame(image_file) -> dict:
             'user': {
                 'id': user.pk,
                 'name': user.name,
-                'email': user.email,
+                'cultivation': user.cultivation_label,
             },
             'score': round(best['score'], 4),
             'raw_score': round(best['raw_score'], 4),
@@ -169,5 +169,5 @@ def recognize_frame(image_file) -> dict:
         logger.exception("Recognition failed")
         return {
             'status': 'error',
-            'message': 'Khong the nhan dien frame nay.',
+            'message': 'Thiên nhãn chưa thể dò xét khung hình này.',
         }
