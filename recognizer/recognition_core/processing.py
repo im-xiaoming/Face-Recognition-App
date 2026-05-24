@@ -51,17 +51,7 @@ def _get_face_app():
 
 def preprocess_face(image_source) -> tuple[np.ndarray, dict]:
     """image_source: filesystem path (str/Path) or a BGR numpy array already decoded."""
-    app = _get_face_app()
-
-    if isinstance(image_source, np.ndarray):
-        img = image_source
-    else:
-        img = cv2.imread(str(image_source))
-        if img is None:
-            raise ValueError("Không đọc được ảnh.")
-
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    faces = app.get(img_rgb)
+    img_rgb, faces = detect_faces(image_source)
     if len(faces) == 0:
         raise ValueError("Chưa phát hiện linh diện nào.")
     if len(faces) > 1:
@@ -81,6 +71,47 @@ def preprocess_face(image_source) -> tuple[np.ndarray, dict]:
     face_info._img_area = img_area
 
     return aligned, face_info
+
+
+def detect_faces(image_source) -> tuple[np.ndarray, list]:
+    """Return RGB image and every detected face sorted by visual prominence."""
+    app = _get_face_app()
+
+    if isinstance(image_source, np.ndarray):
+        img = image_source
+    else:
+        img = cv2.imread(str(image_source))
+        if img is None:
+            raise ValueError("Không đọc được ảnh.")
+
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    faces = app.get(img_rgb)
+    img_area = img_rgb.shape[0] * img_rgb.shape[1]
+
+    def combined_score(face):
+        box = face.bbox
+        area = (box[2] - box[0]) * (box[3] - box[1])
+        area_score = area / img_area
+        conf_score = float(face.det_score)
+        return 0.7 * area_score + 0.3 * conf_score
+
+    for face in faces:
+        face._img_area = img_area
+
+    return img_rgb, sorted(faces, key=combined_score, reverse=True)
+
+
+def preprocess_faces(image_source, max_faces=20) -> list[tuple[np.ndarray, dict]]:
+    """Return aligned crops and face metadata for every face in one frame."""
+    img_rgb, faces = detect_faces(image_source)
+    if len(faces) == 0:
+        return []
+
+    outputs = []
+    for face_info in faces[:max_faces]:
+        aligned = face_align.norm_crop(img_rgb, landmark=face_info.kps, image_size=112)
+        outputs.append((aligned, face_info))
+    return outputs
 
 
 def estimate_pose_and_quality(aligned_face: np.ndarray, face_info) -> dict:

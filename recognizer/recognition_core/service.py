@@ -7,7 +7,7 @@ import numpy as np
 from users.models import FacePose, UserEmbedding, UserModel
 
 from .inference import inference
-from .processing import classify_pose, estimate_pose_and_quality, preprocess_face
+from .processing import classify_pose, estimate_pose_and_quality, preprocess_face, preprocess_faces
 from .vector_search import search
 
 logger = logging.getLogger(__name__)
@@ -81,6 +81,53 @@ def _group_matches(matches: list[dict], detected_pose: str) -> list[dict]:
     return sorted(candidates, key=lambda item: item['score'], reverse=True)
 
 
+def _bbox_payload(face_info) -> dict:
+    box = face_info.bbox
+    return {
+        'x': float(box[0]),
+        'y': float(box[1]),
+        'w': float(box[2] - box[0]),
+        'h': float(box[3] - box[1]),
+    }
+
+
+def _resolve_identity(embedding, detected_pose: str) -> dict:
+    matches = search(embedding, limit=SEARCH_LIMIT)
+    candidates = _group_matches(matches, detected_pose)
+
+    if not candidates:
+        return {
+            'status': 'unknown',
+            'message': 'Chưa tìm thấy đạo hữu phù hợp.',
+        }
+
+    best = candidates[0]
+    second_score = candidates[1]['score'] if len(candidates) > 1 else 0.0
+    margin = best['score'] - second_score
+
+    if best['score'] < MIN_SCORE or margin < MIN_MARGIN:
+        return {
+            'status': 'unknown',
+            'message': 'Chưa nhận ra đạo hữu.',
+            'score': round(best['score'], 4),
+            'margin': round(margin, 4),
+        }
+
+    user = UserModel.objects.get(pk=best['user_id'])
+    return {
+        'status': 'recognized',
+        'user': {
+            'id': user.pk,
+            'name': user.name,
+            'cultivation': user.cultivation_label,
+        },
+        'score': round(best['score'], 4),
+        'raw_score': round(best['raw_score'], 4),
+        'margin': round(margin, 4),
+        'matched_poses': best['matched_poses'],
+    }
+
+
 def recognize_frame(image_file) -> dict:
     if not UserEmbedding.objects.exists():
         return {
@@ -92,13 +139,7 @@ def recognize_frame(image_file) -> dict:
         frame_bgr = _decode_upload(image_file)
         frame_size = {'width': int(frame_bgr.shape[1]), 'height': int(frame_bgr.shape[0])}
         aligned, face_info = preprocess_face(frame_bgr)
-        box = face_info.bbox
-        bbox = {
-            'x': float(box[0]),
-            'y': float(box[1]),
-            'w': float(box[2] - box[0]),
-            'h': float(box[3] - box[1]),
-        }
+        bbox = _bbox_payload(face_info)
         quality = estimate_pose_and_quality(aligned, face_info)
 
         if quality['reject']:
@@ -112,49 +153,10 @@ def recognize_frame(image_file) -> dict:
 
         detected_pose = classify_pose(quality.get('yaw'))
 
-        embedding = inference([aligned])[0]
-        matches = search(embedding, limit=SEARCH_LIMIT)
-        candidates = _group_matches(matches, detected_pose)
-
-        if not candidates:
-            return {
-                'status': 'unknown',
-                'message': 'Chưa tìm thấy đạo hữu phù hợp.',
-                'pose': detected_pose,
-                'quality': quality,
-                'bbox': bbox,
-                'frame_size': frame_size,
-            }
-
-        best = candidates[0]
-        second_score = candidates[1]['score'] if len(candidates) > 1 else 0.0
-        margin = best['score'] - second_score
-
-        if best['score'] < MIN_SCORE or margin < MIN_MARGIN:
-            return {
-                'status': 'unknown',
-                'message': 'Chưa nhận ra đạo hữu.',
-                'score': round(best['score'], 4),
-                'margin': round(margin, 4),
-                'pose': detected_pose,
-                'quality': quality,
-                'bbox': bbox,
-                'frame_size': frame_size,
-            }
-
-        user = UserModel.objects.get(pk=best['user_id'])
+        result = _resolve_identity(inference([aligned])[0], detected_pose)
         return {
-            'status': 'recognized',
-            'user': {
-                'id': user.pk,
-                'name': user.name,
-                'cultivation': user.cultivation_label,
-            },
-            'score': round(best['score'], 4),
-            'raw_score': round(best['raw_score'], 4),
-            'margin': round(margin, 4),
+            **result,
             'pose': detected_pose,
-            'matched_poses': best['matched_poses'],
             'quality': quality,
             'bbox': bbox,
             'frame_size': frame_size,
@@ -170,4 +172,94 @@ def recognize_frame(image_file) -> dict:
         return {
             'status': 'error',
             'message': 'Thiên nhãn chưa thể dò xét khung hình này.',
+        }
+
+
+def recognize_faces_in_frame(image_file, max_faces=20) -> dict:
+    try:
+        frame_bgr = _decode_upload(image_file)
+        return recognize_faces_in_image(frame_bgr, max_faces=max_faces)
+
+    except ValueError as exc:
+        return {
+            'status': 'reject',
+            'message': str(exc),
+            'faces': [],
+        }
+    except Exception:
+        logger.exception("Video frame recognition failed")
+        return {
+            'status': 'error',
+            'message': 'Thiên nhãn chưa thể dò xét frame video này.',
+            'faces': [],
+        }
+
+
+def recognize_faces_in_image(frame_bgr: np.ndarray, max_faces=20) -> dict:
+    try:
+        frame_size = {'width': int(frame_bgr.shape[1]), 'height': int(frame_bgr.shape[0])}
+        face_items = preprocess_faces(frame_bgr, max_faces=max_faces)
+
+        if not face_items:
+            return {
+                'status': 'ok',
+                'message': 'Chưa phát hiện linh diện nào.',
+                'frame_size': frame_size,
+                'faces': [],
+            }
+
+        embeddings_available = UserEmbedding.objects.exists()
+        faces = []
+        valid_aligned = []
+        valid_indexes = []
+
+        for index, (aligned, face_info) in enumerate(face_items):
+            quality = estimate_pose_and_quality(aligned, face_info)
+            detected_pose = classify_pose(quality.get('yaw'))
+            face_payload = {
+                'index': index,
+                'status': 'unknown',
+                'message': 'Chưa nhận ra đạo hữu.',
+                'bbox': _bbox_payload(face_info),
+                'pose': detected_pose,
+                'quality': quality,
+            }
+
+            if quality['reject']:
+                face_payload['status'] = 'reject'
+                face_payload['message'] = quality.get('reject_reason') or 'Linh ảnh chưa đạt.'
+            elif not embeddings_available:
+                face_payload['message'] = 'Chưa có đạo hữu nào lưu danh.'
+            else:
+                valid_indexes.append(index)
+                valid_aligned.append(aligned)
+
+            faces.append(face_payload)
+
+        if valid_aligned:
+            embeddings = inference(valid_aligned)
+            for face_index, embedding in zip(valid_indexes, embeddings):
+                identity = _resolve_identity(embedding, faces[face_index]['pose'])
+                faces[face_index].update(identity)
+
+        recognized_count = sum(1 for face in faces if face['status'] == 'recognized')
+        return {
+            'status': 'ok',
+            'message': f'Đã dò {len(faces)} linh diện, nhận ra {recognized_count}.',
+            'frame_size': frame_size,
+            'faces': faces,
+        }
+
+    except ValueError as exc:
+        return {
+            'status': 'reject',
+            'message': str(exc),
+            'faces': [],
+        }
+    except Exception:
+        logger.exception("Video frame recognition failed")
+        return {
+            'status': 'error',
+            'message': 'Thiên nhãn chưa thể dò xét frame video này.',
+            'faces': [],
         }

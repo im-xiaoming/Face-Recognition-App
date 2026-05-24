@@ -86,7 +86,7 @@
 
     if (label) {
       const fontSize = Math.max(12, cssW * 0.022);
-      ctx.font = `${fontSize}px sans-serif`;
+      ctx.font = `${fontSize}px "TP Han Zi", sans-serif`;
       const padding = fontSize * 0.3;
       const textWidth = ctx.measureText(label).width;
       const boxH = fontSize + padding * 2;
