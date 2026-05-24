@@ -39,23 +39,23 @@
   const STEPS = [
     {
       pose: 'front',
-      message: 'Nhìn thẳng vào camera',
+      message: 'Chính diện nhìn vào pháp kính',
       direction: '',
       passed: (f) =>
         Math.abs(f.yaw) <= FRONT_YAW_LIMIT &&
         Math.abs(f.pitch) <= PITCH_LIMIT &&
         Math.abs(f.roll) <= ROLL_LIMIT_RAD,
       hint: (f) => {
-        if (Math.abs(f.roll) > ROLL_LIMIT_RAD) return 'Giữ đầu thẳng, đừng nghiêng em';
+        if (Math.abs(f.roll) > ROLL_LIMIT_RAD) return 'Giữ đầu ngay thẳng, đừng nghiêng';
         if (Math.abs(f.pitch) > PITCH_LIMIT)
-          return f.pitch > 0 ? 'Ngẩng đầu đi em' : 'Cúi đầu xuống một chút đi em';
-        if (Math.abs(f.yaw) > FRONT_YAW_LIMIT) return 'Nhìn thẳng vào camera em';
-        return 'Nhìn thẳng vào camera em';
+          return f.pitch > 0 ? 'Ngẩng đầu lên một chút' : 'Cúi đầu xuống một chút';
+        if (Math.abs(f.yaw) > FRONT_YAW_LIMIT) return 'Nhìn thẳng vào pháp kính';
+        return 'Nhìn thẳng vào pháp kính';
       },
     },
     {
       pose: 'left',
-      message: 'Quay đầu sang trái đi em',
+      message: 'Xoay sang tả diện',
       direction: 'left',
       passed: (f) =>
         f.yaw >= SIDE_YAW_LIMIT &&
@@ -63,16 +63,16 @@
         Math.abs(f.pitch) <= SIDE_PITCH_LIMIT &&
         Math.abs(f.roll) <= SIDE_ROLL_LIMIT_RAD,
       hint: (f) => {
-        if (Math.abs(f.roll) > SIDE_ROLL_LIMIT_RAD) return 'Giữ đầu thẳng, chỉ quay ngang';
-        if (Math.abs(f.pitch) > SIDE_PITCH_LIMIT) return 'Giữ đầu ngang, đừng cúi em';
-        if (f.yaw < SIDE_YAW_LIMIT) return 'Quay thêm sang trái em';
-        if (f.yaw > SIDE_YAW_MAX) return 'Quay ít lại một chút em';
-        return 'Quay đầu sang trái';
+        if (Math.abs(f.roll) > SIDE_ROLL_LIMIT_RAD) return 'Giữ đầu thẳng, chỉ xoay ngang';
+        if (Math.abs(f.pitch) > SIDE_PITCH_LIMIT) return 'Giữ đầu ngang, đừng cúi';
+        if (f.yaw < SIDE_YAW_LIMIT) return 'Xoay thêm sang trái';
+        if (f.yaw > SIDE_YAW_MAX) return 'Thu lại một chút';
+        return 'Xoay sang tả diện';
       },
     },
     {
       pose: 'right',
-      message: 'Quay đầu sang phải đi em',
+      message: 'Xoay sang hữu diện',
       direction: 'right',
       passed: (f) =>
         f.yaw <= -SIDE_YAW_LIMIT &&
@@ -80,11 +80,11 @@
         Math.abs(f.pitch) <= SIDE_PITCH_LIMIT &&
         Math.abs(f.roll) <= SIDE_ROLL_LIMIT_RAD,
       hint: (f) => {
-        if (Math.abs(f.roll) > SIDE_ROLL_LIMIT_RAD) return 'Giữ đầu thẳng, chỉ quay ngang';
-        if (Math.abs(f.pitch) > SIDE_PITCH_LIMIT) return 'Giữ đầu ngang, đừng cúi em';
-        if (f.yaw > -SIDE_YAW_LIMIT) return 'Quay thêm sang phải đi em';
-        if (f.yaw < -SIDE_YAW_MAX) return 'Quay ít lại một chút đi em';
-        return 'Quay đầu sang phải đi em';
+        if (Math.abs(f.roll) > SIDE_ROLL_LIMIT_RAD) return 'Giữ đầu thẳng, chỉ xoay ngang';
+        if (Math.abs(f.pitch) > SIDE_PITCH_LIMIT) return 'Giữ đầu ngang, đừng cúi';
+        if (f.yaw > -SIDE_YAW_LIMIT) return 'Xoay thêm sang phải';
+        if (f.yaw < -SIDE_YAW_MAX) return 'Thu lại một chút';
+        return 'Xoay sang hữu diện';
       },
     },
   ];
@@ -136,7 +136,7 @@
     if (video.videoWidth && video.videoHeight) return Promise.resolve();
     return new Promise((resolve, reject) => {
       const timeout = window.setTimeout(() => {
-        reject(new Error('Không thể mở camera'));
+        reject(new Error('Không thể khai mở pháp kính'));
       }, 5000);
 
       video.addEventListener('loadedmetadata', () => {
@@ -293,23 +293,23 @@
   function analyzeFace(results, video, oval) {
     const faces = results.multiFaceLandmarks || [];
 
-    if (faces.length === 0) return { ok: false, reason: 'Không thấy khuôn mặt' };
-    if (faces.length > 1) return { ok: false, reason: 'Chỉ giữ một khuôn mặt trong khung' };
+    if (faces.length === 0) return { ok: false, reason: 'Chưa thấy linh diện' };
+    if (faces.length > 1) return { ok: false, reason: 'Chỉ giữ một đạo hữu trong khung' };
 
     const landmarks = faces[0];
     const m = computeFaceMetrics(landmarks);
 
-    if (m.width < MIN_FACE_WIDTH) return { ok: false, reason: 'Đưa mặt lại gần hơn' };
+    if (m.width < MIN_FACE_WIDTH) return { ok: false, reason: 'Tiến lại gần pháp trận hơn' };
     if (m.width > MAX_FACE_WIDTH) return { ok: false, reason: 'Lùi ra xa một chút' };
 
     const brightness = getBrightness(video);
-    if (brightness < MIN_BRIGHTNESS) return { ok: false, reason: 'Tăng ánh sáng mạnh lên' };
+    if (brightness < MIN_BRIGHTNESS) return { ok: false, reason: 'Tăng linh quang sáng hơn' };
     if (brightness > MAX_BRIGHTNESS) return { ok: false, reason: 'Giảm ánh sáng trực tiếp' };
 
     const region = getVisibleRegion(video, oval.containerW, oval.containerH);
     const insideRatio = faceOvalInsideRatio(landmarks, region, oval);
     if (insideRatio < OVAL_INSIDE_RATIO) {
-      return { ok: false, reason: 'Đưa mặt vào trong khung oval' };
+      return { ok: false, reason: 'Đưa linh diện vào trong pháp trận' };
     }
 
     const nosePx = landmarkToContainer(m.nose, region, oval.containerW, oval.containerH);
@@ -356,7 +356,7 @@
 
   async function submitCapturedImages() {
     active = false;
-    showUiFeedback('Đang lưu ảnh...', '');
+    showUiFeedback('Đang phong ấn linh ảnh...', '');
 
     const dataTransfer = new DataTransfer();
     captured.forEach((item) => {
@@ -402,7 +402,7 @@
         stableFrames = 0;
         prevNose = face.nosePx;
         setGuide(true);
-        showUiFeedback('Giữ yên...', step.direction);
+        showUiFeedback('Tĩnh tâm giữ yên...', step.direction);
         return;
       }
     }
@@ -414,7 +414,7 @@
     if (stableFrames >= STABLE_FRAMES_REQUIRED) {
       await completeStep(step);
     } else {
-      showUiFeedback('Giữ yên...', step.direction);
+      showUiFeedback('Tĩnh tâm giữ yên...', step.direction);
     }
   }
 
@@ -428,7 +428,7 @@
       try {
         await faceMesh.send({ image: el('camera') });
       } catch (err) {
-        showUiFeedback(`Lỗi xử lý camera: ${err.message}`, '');
+        showUiFeedback(`Pháp kính nhiễu loạn: ${err.message}`, '');
       } finally {
         sending = false;
       }
@@ -442,7 +442,7 @@
     if (!video) return;
 
     if (typeof FaceMesh === 'undefined') {
-      showUiFeedback('Không tải được FaceMesh', '');
+      showUiFeedback('Không tải được linh trận nhận diện', '');
       return;
     }
 

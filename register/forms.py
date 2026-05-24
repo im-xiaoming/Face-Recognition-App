@@ -17,27 +17,28 @@ CULTIVATION_CHOICES = [
     ('khuy_niet', 'Khuy Niết'),
     ('tinh_niet', 'Tịnh Niết'),
     ('toai_niet', 'Toái Niết'),
-    ('dap_thien_canh', 'Đạp Thiên Cảnh'),
+    ('thien_nhan_suy_kiep', 'Thiên Nhân Suy Kiếp'),
+    ('khong_niet', 'Không Niết'),
+    ('khong_linh', 'Không Linh'),
+    ('khong_huyen', 'Không Huyền'),
+    ('khong_kiep', 'Không Kiếp'),
+    ('ban_bo_dap_thien', 'Bán Bộ Đạp Thiên'),
+    ('dap_thien', 'Đạp Thiên Cảnh'),
 ]
 
 
 class UserForm(forms.ModelForm):
     class Meta:
         model = UserModel
-        fields = ['name', 'email', 'cultivation', 'dob']
+        fields = ['name', 'cultivation', 'dob']
 
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-input',
-                'placeholder': 'Nguyễn Văn A',
+                'placeholder': 'Vương Lâm',
                 'id': 'name'
             }),
 
-            'email': forms.EmailInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'example@email.com',
-                'id': 'email'
-            }),
             'cultivation': forms.Select(choices=CULTIVATION_CHOICES, attrs={
                 'class': 'form-input',
                 'id': 'cultivation'
@@ -49,27 +50,17 @@ class UserForm(forms.ModelForm):
                 'id': 'dob'
             }),
         }
-        
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if not email:
-            raise ValidationError("Email is required.")
-        
-        if UserModel.objects.filter(email=email).exists():
-            raise ValidationError("Email is exists.")
-        
-        return email
     
     def clean_name(self):
         name = self.cleaned_data.get('name')
         if not name:
-            raise ValidationError("Name is required.")
+            raise ValidationError("Vui lòng khai đạo danh.")
         
         return name
         
     def clean_dob(self):
         dob = self.cleaned_data.get('dob')
         if not dob:
-            raise ValidationError("DOB is required.")
+            raise ValidationError("Vui lòng chọn niên sinh.")
         
         return dob

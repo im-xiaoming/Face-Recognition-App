@@ -26,29 +26,36 @@ def _get_face_app():
     insightface_root = Path.home() / '.insightface'
     (insightface_root / 'models').mkdir(parents=True, exist_ok=True)
 
+    try:
+        import onnxruntime as ort
+        available = set(ort.get_available_providers())
+    except Exception:
+        available = set()
+
+    if 'CUDAExecutionProvider' in available:
+        providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+        ctx_id = 0
+    else:
+        providers = ['CPUExecutionProvider']
+        ctx_id = -1
+
     app = FaceAnalysis(
         name='buffalo_l',
         root=str(insightface_root),
-        providers=['CPUExecutionProvider'],
+        providers=providers,
     )
-    app.prepare(ctx_id=-1, det_size=(640, 640))
+    app.prepare(ctx_id=ctx_id, det_size=(640, 640))
     _cache['app'] = app
     return app
 
 
-def preprocess_face(image_path: str) -> tuple[np.ndarray, dict]:
-    app = _get_face_app()
-
-    img = cv2.imread(image_path)
-    if img is None:
-        raise ValueError("Không đọc được ảnh.")
-
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    faces = app.get(img_rgb)
+def preprocess_face(image_source) -> tuple[np.ndarray, dict]:
+    """image_source: filesystem path (str/Path) or a BGR numpy array already decoded."""
+    img_rgb, faces = detect_faces(image_source)
     if len(faces) == 0:
-        raise ValueError("Không phát hiện khuôn mặt nào.")
+        raise ValueError("Chưa phát hiện linh diện nào.")
     if len(faces) > 1:
-        raise ValueError("Chỉ được có một khuôn mặt trong ảnh.")
+        raise ValueError("Mỗi linh ảnh chỉ nên có một đạo hữu.")
 
     img_area = img_rgb.shape[0] * img_rgb.shape[1]
 
@@ -64,6 +71,47 @@ def preprocess_face(image_path: str) -> tuple[np.ndarray, dict]:
     face_info._img_area = img_area
 
     return aligned, face_info
+
+
+def detect_faces(image_source) -> tuple[np.ndarray, list]:
+    """Return RGB image and every detected face sorted by visual prominence."""
+    app = _get_face_app()
+
+    if isinstance(image_source, np.ndarray):
+        img = image_source
+    else:
+        img = cv2.imread(str(image_source))
+        if img is None:
+            raise ValueError("Không đọc được ảnh.")
+
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    faces = app.get(img_rgb)
+    img_area = img_rgb.shape[0] * img_rgb.shape[1]
+
+    def combined_score(face):
+        box = face.bbox
+        area = (box[2] - box[0]) * (box[3] - box[1])
+        area_score = area / img_area
+        conf_score = float(face.det_score)
+        return 0.7 * area_score + 0.3 * conf_score
+
+    for face in faces:
+        face._img_area = img_area
+
+    return img_rgb, sorted(faces, key=combined_score, reverse=True)
+
+
+def preprocess_faces(image_source, max_faces=20) -> list[tuple[np.ndarray, dict]]:
+    """Return aligned crops and face metadata for every face in one frame."""
+    img_rgb, faces = detect_faces(image_source)
+    if len(faces) == 0:
+        return []
+
+    outputs = []
+    for face_info in faces[:max_faces]:
+        aligned = face_align.norm_crop(img_rgb, landmark=face_info.kps, image_size=112)
+        outputs.append((aligned, face_info))
+    return outputs
 
 
 def estimate_pose_and_quality(aligned_face: np.ndarray, face_info) -> dict:
@@ -82,7 +130,7 @@ def estimate_pose_and_quality(aligned_face: np.ndarray, face_info) -> dict:
     result["det_score"] = round(det_score, 4)
     if det_score < MIN_DET_SCORE:
         result["reject"] = True
-        result["reject_reason"] = f"Độ tin cậy phát hiện thấp (det_score={det_score:.2f})"
+        result["reject_reason"] = f"Linh diện chưa rõ nét (det_score={det_score:.2f})"
         return result
 
     img_area = float(getattr(face_info, '_img_area', 0.0))
@@ -93,7 +141,7 @@ def estimate_pose_and_quality(aligned_face: np.ndarray, face_info) -> dict:
         result["face_area_ratio"] = round(face_area_ratio, 4)
         if face_area_ratio < MIN_FACE_AREA_RATIO:
             result["reject"] = True
-            result["reject_reason"] = f"Khuôn mặt quá nhỏ (ratio={face_area_ratio:.3f})"
+            result["reject_reason"] = f"Linh diện quá nhỏ (ratio={face_area_ratio:.3f})"
             return result
 
     gray = cv2.cvtColor(aligned_face, cv2.COLOR_RGB2GRAY)
@@ -102,12 +150,12 @@ def estimate_pose_and_quality(aligned_face: np.ndarray, face_info) -> dict:
 
     if blur_score < MIN_BLUR_SCORE:
         result["reject"] = True
-        result["reject_reason"] = f"Ảnh quá mờ (blur={blur_score:.1f})"
+        result["reject_reason"] = f"Linh ảnh quá mờ (blur={blur_score:.1f})"
         return result
 
     if brightness < MIN_BRIGHTNESS or brightness > MAX_BRIGHTNESS:
         result["reject"] = True
-        result["reject_reason"] = f"Ánh sáng không đạt (brightness={brightness:.1f})"
+        result["reject_reason"] = f"Linh quang chưa đạt (brightness={brightness:.1f})"
         return result
 
     quality = min(blur_score / 200.0, 1.0) * (1 - abs(brightness - 127) / 127)

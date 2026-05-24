@@ -2,14 +2,23 @@
 {% load static %}
 
 {% block title %}
-  <title>Recognition - Face Recognition</title>
+  <title>Khai Kính Dò Linh Diện</title>
 {% endblock %}
 
 {% block css %}
   <style>
     .container { max-width: 720px; }
-    .camera-wrapper { max-width: 640px; }
+    .camera-wrapper { max-width: 640px; position: relative; }
     .camera-view { aspect-ratio: 4/3; border-radius: 16px; }
+    .camera-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      border-radius: 16px;
+      z-index: 2;
+    }
   </style>
 {% endblock %}
 
@@ -22,7 +31,8 @@
   </a>
 
   <div class="container">
-    <h1 class="title">Recognition</h1>
+    <h1 class="title">Khai Kính Dò Linh Diện</h1>
+    <p class="subtitle">Thiên Nhãn Linh Kính chiếu rõ đạo hữu giữa nhân gian</p>
     
     <div class="camera-wrapper">
       <video
@@ -32,9 +42,10 @@
         playsinline
         data-recognition-url="{% url 'recognition-api' %}"
       ></video>
+      <canvas id="overlay" class="camera-overlay"></canvas>
     </div>
     
-    <div id="status" class="status">Đang quét khuôn mặt...</div>
+    <div id="status" class="status">Thiên nhãn đang dò linh diện...</div>
     
     <div class="camera-controls">
       <button class="control-btn stop-btn" onclick="stopCamera()">
@@ -48,7 +59,7 @@
 
 
 {% block js %}
-  <script src="{% static 'recognizer/js/recognition.js' %}"></script>
+  <script src="{% static 'recognizer/js/recognition.js' %}?v=4"></script>
   <script>
     (async function () {
       try {

@@ -33,7 +33,7 @@ def _save_single_file(image, raw_dir: Path) -> Path:
     """Validate và lưu một file vào raw_dir. Raise ValueError nếu không hợp lệ."""
     extension = Path(image.name).suffix.lower()
     if extension not in ALLOWED_EXTENSIONS or not image.content_type.startswith('image/'):
-        raise ValueError('Only support JPG, PNG or WEBP.')
+        raise ValueError('Chỉ nhận linh ảnh định dạng JPG, PNG hoặc WEBP.')
 
     raw_path = raw_dir / f'{uuid4().hex}{extension}'
     with raw_path.open('wb+') as f:
@@ -122,22 +122,29 @@ def save_face_images(user, accepted: list[dict], temp_dir: Path) -> list[FaceIma
 
 
 def _extract_and_store_embeddings(user, face_images: list[FaceImage]) -> None:
+    import torch
     from models import inference
     from tools import update
 
     try:
         processed_paths = [fi.processed_image.path for fi in face_images]
         embeddings = inference(processed_paths)
+        if isinstance(embeddings, torch.Tensor):
+            embeddings = embeddings.detach().cpu().numpy()
 
-        points = []
-        for face_img, embedding in zip(face_images, embeddings):
-            UserEmbedding.objects.create(user=user, embed_id=face_img.pk, pose=face_img.pose)
-            points.append((
-                face_img.pk,
-                embedding,
-                {'embed_id': face_img.pk, 'user_id': user.pk, 'pose': face_img.pose},
-            ))
+        UserEmbedding.objects.bulk_create([
+            UserEmbedding(user=user, embed_id=fi.pk, pose=fi.pose)
+            for fi in face_images
+        ])
 
+        points = [
+            (
+                fi.pk,
+                vec,
+                {'embed_id': fi.pk, 'user_id': user.pk, 'pose': fi.pose},
+            )
+            for fi, vec in zip(face_images, embeddings)
+        ]
         update(points)
     except Exception:
         logger.exception("Failed to extract/store embeddings for user %s", user.pk)
