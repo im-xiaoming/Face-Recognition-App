@@ -90,7 +90,15 @@ def recognize_frame(image_file) -> dict:
 
     try:
         frame_bgr = _decode_upload(image_file)
+        frame_size = {'width': int(frame_bgr.shape[1]), 'height': int(frame_bgr.shape[0])}
         aligned, face_info = preprocess_face(frame_bgr)
+        box = face_info.bbox
+        bbox = {
+            'x': float(box[0]),
+            'y': float(box[1]),
+            'w': float(box[2] - box[0]),
+            'h': float(box[3] - box[1]),
+        }
         quality = estimate_pose_and_quality(aligned, face_info)
 
         if quality['reject']:
@@ -98,6 +106,8 @@ def recognize_frame(image_file) -> dict:
                 'status': 'reject',
                 'message': quality.get('reject_reason') or 'Ảnh không đạt yêu cầu.',
                 'quality': quality,
+                'bbox': bbox,
+                'frame_size': frame_size,
             }
 
         detected_pose = classify_pose(quality.get('yaw'))
@@ -112,6 +122,8 @@ def recognize_frame(image_file) -> dict:
                 'message': 'Khong tim thay ung vien phu hop.',
                 'pose': detected_pose,
                 'quality': quality,
+                'bbox': bbox,
+                'frame_size': frame_size,
             }
 
         best = candidates[0]
@@ -126,6 +138,8 @@ def recognize_frame(image_file) -> dict:
                 'margin': round(margin, 4),
                 'pose': detected_pose,
                 'quality': quality,
+                'bbox': bbox,
+                'frame_size': frame_size,
             }
 
         user = UserModel.objects.get(pk=best['user_id'])
@@ -142,6 +156,8 @@ def recognize_frame(image_file) -> dict:
             'pose': detected_pose,
             'matched_poses': best['matched_poses'],
             'quality': quality,
+            'bbox': bbox,
+            'frame_size': frame_size,
         }
 
     except ValueError as exc:

@@ -26,11 +26,11 @@ def _get_embedding_model():
         return _cache['model'], _cache['transform'], _cache['device']
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    checkpoint = Path(settings.BASE_DIR) / 'checkpoints' / 'ir_50.pth'
+    checkpoint = Path(settings.BASE_DIR) / 'checkpoints' / 'ir_101_best.pth'
     if not checkpoint.exists():
         raise FileNotFoundError(
             f"Missing embedding checkpoint: {checkpoint}. "
-            "Add ir_50.pth before using recognition."
+            "Add ir_101_best.pth before using recognition."
         )
 
     transform = transforms.Compose([
@@ -38,7 +38,7 @@ def _get_embedding_model():
         transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
     ])
 
-    model = get_model('ir_50', device)
+    model = get_model('ir_101', device)
     load_weight(model, checkpoint)
     model.to(device)
     model.eval()

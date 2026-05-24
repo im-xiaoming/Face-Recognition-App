@@ -189,7 +189,7 @@ function startRecognition() {
     } else {
       showStatus('Đang quét khuôn mặt...');
     }
-  }, 2000);
+  }, 1000);
 }
 
 /**
