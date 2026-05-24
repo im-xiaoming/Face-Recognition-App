@@ -42,11 +42,23 @@ def _get_model():
     if _cache:
         return _cache['app'], _cache['model'], _cache['transform'], _cache['device']
 
-    app = FaceAnalysis(name='buffalo_l', providers=['CUDAExecutionProvider'])
-    app.prepare(ctx_id=0, det_size=(640, 640))
+    try:
+        import onnxruntime as ort
+        available = set(ort.get_available_providers())
+    except Exception:
+        available = set()
+
+    if 'CUDAExecutionProvider' in available:
+        providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+        ctx_id = 0
+    else:
+        providers = ['CPUExecutionProvider']
+        ctx_id = -1
+
+    app = FaceAnalysis(name='buffalo_l', providers=providers)
+    app.prepare(ctx_id=ctx_id, det_size=(640, 640))
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(device)
 
     transform = transforms.Compose([
             transforms.ToTensor(),
@@ -71,6 +83,8 @@ def preprocess_face(image_path: str) -> tuple[np.ndarray, dict]:
     app, _, _, _ = _get_model()
 
     img = cv2.imread(image_path)
+    if img is None:
+        raise ValueError("Không đọc được ảnh.")
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     faces = app.get(img_rgb)
