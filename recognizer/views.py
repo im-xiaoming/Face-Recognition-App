@@ -341,12 +341,7 @@ def _get_stream_font(size):
     if size in _font_cache:
         return _font_cache[size]
 
-    font_candidates = [
-        Path(settings.BASE_DIR) / 'static' / 'font' / 'TP Han Zi.ttf',
-        Path(settings.BASE_DIR) / 'static' / 'font' / 'TP Han Zi.otf',
-        Path(settings.BASE_DIR).parent / 'venv' / 'Lib' / 'site-packages' / 'matplotlib' / 'mpl-data' / 'fonts' / 'ttf' / 'DejaVuSans.ttf',
-        Path('C:/Windows/Fonts/arial.ttf'),
-    ]
+    font_candidates = _stream_font_candidates()
     for font_path in font_candidates:
         if font_path.exists():
             _font_cache[size] = ImageFont.truetype(str(font_path), size=size)
@@ -354,3 +349,24 @@ def _get_stream_font(size):
 
     _font_cache[size] = ImageFont.load_default()
     return _font_cache[size]
+
+
+def _stream_font_candidates():
+    candidates = [
+        Path(settings.BASE_DIR) / 'static' / 'font' / 'TP Han Zi.ttf',
+        Path(settings.BASE_DIR) / 'static' / 'font' / 'TP Han Zi.otf',
+        Path('C:/Windows/Fonts/arial.ttf'),
+        Path('/System/Library/Fonts/Supplemental/Arial Unicode.ttf'),
+        Path('/System/Library/Fonts/Supplemental/Arial.ttf'),
+        Path('/Library/Fonts/Arial Unicode.ttf'),
+        Path('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'),
+    ]
+
+    try:
+        from matplotlib import font_manager
+        dejavu_path = font_manager.findfont('DejaVu Sans', fallback_to_default=False)
+        candidates.append(Path(dejavu_path))
+    except Exception:
+        pass
+
+    return candidates
