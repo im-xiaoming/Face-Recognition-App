@@ -12,6 +12,12 @@
   {% block css %}{% endblock %}
 </head>
 <body>
+  <canvas id="cultivation-bg" class="cultivation-bg" aria-hidden="true"></canvas>
+  <div class="transition-veil" aria-hidden="true">
+    <div class="veil-ring"></div>
+    <div class="veil-cloud veil-cloud-left"></div>
+    <div class="veil-cloud veil-cloud-right"></div>
+  </div>
 
   <!-- Menu -->
   <button class="menu-btn" onclick="toggleMenu()">
@@ -26,6 +32,7 @@
 
   {% block content %}{% endblock %}
 
+  <script type="module" src="{% static 'js/cultivation-scene.js' %}"></script>
   <script src="{% static 'js/app.js' %}"></script>
 
   {% block js %}{% endblock %}

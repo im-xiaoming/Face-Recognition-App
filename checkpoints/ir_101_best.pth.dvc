@@ -1,0 +1,5 @@
+outs:
+- md5: 75a62c44d49d943b61860c8c683cc3ef
+  size: 409885779
+  hash: md5
+  path: ir_101_best.pth

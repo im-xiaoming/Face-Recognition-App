@@ -5,6 +5,43 @@
 
 let videoStream = null;
 let recognitionInterval = null;
+let transitionInProgress = false;
+
+function shouldAnimateNavigation(event, link) {
+  if (!link || transitionInProgress) return false;
+  if (event.defaultPrevented || event.button !== 0) return false;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
+  if (link.target && link.target !== '_self') return false;
+  if (link.hasAttribute('download')) return false;
+
+  const href = link.getAttribute('href');
+  if (!href || href.startsWith('#')) return false;
+
+  const nextUrl = new URL(href, window.location.href);
+  if (nextUrl.origin !== window.location.origin) return false;
+  if (nextUrl.href === window.location.href) return false;
+
+  return true;
+}
+
+function runPageTransition(nextHref) {
+  transitionInProgress = true;
+  document.body.classList.remove('page-enter');
+  document.body.classList.add('is-leaving');
+
+  if (videoStream) {
+    videoStream.getTracks().forEach(track => track.stop());
+    videoStream = null;
+  }
+  if (recognitionInterval) {
+    clearInterval(recognitionInterval);
+    recognitionInterval = null;
+  }
+
+  window.setTimeout(() => {
+    window.location.href = nextHref;
+  }, 430);
+}
 
 /**
  * Khởi tạo camera và hiển thị lên video element
@@ -219,4 +256,22 @@ document.addEventListener('click', function(e) {
   if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
     menu.classList.remove('show');
   }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.body.classList.add('page-enter');
+});
+
+window.addEventListener('pageshow', function() {
+  transitionInProgress = false;
+  document.body.classList.remove('is-leaving');
+  document.body.classList.add('page-enter');
+});
+
+document.addEventListener('click', function(event) {
+  const link = event.target.closest('a[href]');
+  if (!shouldAnimateNavigation(event, link)) return;
+
+  event.preventDefault();
+  runPageTransition(link.href);
 });

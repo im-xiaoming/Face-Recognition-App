@@ -18,15 +18,171 @@
   box-sizing: border-box;
 }
 
+html {
+  min-height: 100%;
+  background: #f8f5ed;
+}
+
 body {
   font-family: 'TP Han Zi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #fff;
+  background: #f8f5ed;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   color: #333;
+  overflow-x: hidden;
+}
+
+.cultivation-bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.transition-veil {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 999;
+}
+
+.transition-veil::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(217, 197, 137, 0.2), transparent 24%),
+    linear-gradient(110deg, transparent 0%, rgba(248, 245, 237, 0.72) 45%, rgba(248, 245, 237, 0.92) 55%, transparent 100%);
+  opacity: 0;
+  transform: translateX(-110%) skewX(-10deg);
+}
+
+.veil-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(56vmin, 420px);
+  height: min(56vmin, 420px);
+  border: 1px solid rgba(176, 138, 60, 0.45);
+  border-radius: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.72) rotate(0deg);
+}
+
+.veil-ring::before,
+.veil-ring::after {
+  content: '';
+  position: absolute;
+  inset: 13%;
+  border: 1px solid rgba(83, 111, 103, 0.28);
+  border-radius: 50%;
+}
+
+.veil-ring::after {
+  inset: 28%;
+  border-color: rgba(176, 138, 60, 0.32);
+}
+
+.veil-cloud {
+  position: absolute;
+  top: 0;
+  width: 56vw;
+  height: 100%;
+  opacity: 0;
+  filter: blur(18px);
+  background:
+    radial-gradient(circle at 20% 35%, rgba(255, 255, 255, 0.76), transparent 34%),
+    radial-gradient(circle at 56% 54%, rgba(217, 197, 137, 0.38), transparent 30%),
+    radial-gradient(circle at 72% 28%, rgba(142, 167, 154, 0.28), transparent 28%);
+}
+
+.veil-cloud-left {
+  left: -52vw;
+}
+
+.veil-cloud-right {
+  right: -52vw;
+  transform: scaleX(-1);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% 52%, transparent 0%, transparent 55%, rgba(248, 245, 237, 0.45) 100%);
+  opacity: 0;
+  animation: pageQiPulse 760ms ease-out;
+}
+
+body.page-enter .container {
+  animation: pageAscend 680ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+body.page-enter .title,
+body.page-enter .page-title {
+  animation: titleInkReveal 720ms ease-out both;
+}
+
+body.page-enter .subtitle {
+  animation: titleInkReveal 820ms ease-out 80ms both;
+}
+
+body.page-enter .option-btn,
+body.page-enter .user-row,
+body.page-enter .form-group,
+body.page-enter .camera-wrapper,
+body.page-enter .upload-area,
+body.page-enter .status {
+  animation: itemFloatIn 620ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+body.page-enter .option-btn:nth-of-type(1),
+body.page-enter .user-row:nth-child(1),
+body.page-enter .form-group:nth-child(1) {
+  animation-delay: 90ms;
+}
+
+body.page-enter .option-btn:nth-of-type(2),
+body.page-enter .user-row:nth-child(2),
+body.page-enter .form-group:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+body.page-enter .option-btn:nth-of-type(3),
+body.page-enter .user-row:nth-child(3),
+body.page-enter .form-group:nth-child(3) {
+  animation-delay: 210ms;
+}
+
+body.is-leaving .transition-veil::before {
+  animation: veilSweep 560ms cubic-bezier(0.55, 0, 0.1, 1) forwards;
+}
+
+body.is-leaving .veil-ring {
+  animation: ringOpen 560ms cubic-bezier(0.55, 0, 0.1, 1) forwards;
+}
+
+body.is-leaving .veil-cloud-left {
+  animation: cloudSealLeft 560ms cubic-bezier(0.55, 0, 0.1, 1) forwards;
+}
+
+body.is-leaving .veil-cloud-right {
+  animation: cloudSealRight 560ms cubic-bezier(0.55, 0, 0.1, 1) forwards;
+}
+
+body.is-leaving .container,
+body.is-leaving .back-btn,
+body.is-leaving .menu-btn {
+  animation: pageDepart 420ms ease-in forwards;
 }
 
 button,
@@ -38,6 +194,8 @@ textarea {
 
 /* Container chính */
 .container {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 400px;
   padding: 20px;
@@ -70,7 +228,7 @@ textarea {
   margin-bottom: 16px;
   border: 2px solid #e5e5e5;
   border-radius: 16px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.9);
   font-size: 18px;
   font-weight: 500;
   color: #333;
@@ -82,6 +240,7 @@ textarea {
 .option-btn:hover {
   border-color: #333;
   background: #fafafa;
+  box-shadow: 0 10px 26px rgba(83, 111, 103, 0.12);
 }
 
 .option-btn:active {
@@ -103,7 +262,7 @@ textarea {
   width: 44px;
   height: 44px;
   border: none;
-  background: #f5f5f5;
+  background: rgba(245, 245, 245, 0.9);
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -133,7 +292,7 @@ textarea {
 .camera-view {
   width: 100%;
   aspect-ratio: 3/4;
-  background: #f0f0f0;
+  background: rgba(240, 240, 240, 0.9);
   border-radius: 24px;
   object-fit: cover;
   transform: scaleX(-1);
@@ -214,6 +373,7 @@ textarea {
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.86);
 }
 
 .upload-area:hover {
@@ -255,7 +415,7 @@ textarea {
 .status {
   margin-top: 20px;
   padding: 12px 24px;
-  background: #f5f5f5;
+  background: rgba(245, 245, 245, 0.9);
   border-radius: 8px;
   font-size: 14px;
   color: #666;
@@ -269,7 +429,7 @@ textarea {
   width: 44px;
   height: 44px;
   border: none;
-  background: #f5f5f5;
+  background: rgba(245, 245, 245, 0.9);
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -293,7 +453,7 @@ textarea {
   position: fixed;
   top: 70px;
   right: 20px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid #e5e5e5;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -304,6 +464,7 @@ textarea {
 
 .menu-dropdown.show {
   display: block;
+  animation: itemFloatIn 180ms ease-out both;
 }
 
 .menu-item {
@@ -356,7 +517,7 @@ textarea {
   border: 1px solid #e5e5e5;
   border-radius: 12px;
   margin-bottom: 12px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.92);
   gap: 16px;
 }
 
@@ -387,4 +548,127 @@ textarea {
 .user-detail {
   font-size: 13px;
   color: #888;
+}
+
+@keyframes pageAscend {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+    filter: blur(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes titleInkReveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes itemFloatIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pageDepart {
+  to {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.985);
+    filter: blur(6px);
+  }
+}
+
+@keyframes veilSweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-110%) skewX(-10deg);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(110%) skewX(-10deg);
+  }
+}
+
+@keyframes ringOpen {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.72) rotate(0deg);
+  }
+  22% {
+    opacity: 0.86;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.55) rotate(130deg);
+  }
+}
+
+@keyframes cloudSealLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  20% {
+    opacity: 0.86;
+  }
+  100% {
+    opacity: 0.98;
+    transform: translateX(52vw);
+  }
+}
+
+@keyframes cloudSealRight {
+  0% {
+    opacity: 0;
+    transform: translateX(0) scaleX(-1);
+  }
+  20% {
+    opacity: 0.86;
+  }
+  100% {
+    opacity: 0.98;
+    transform: translateX(-52vw) scaleX(-1);
+  }
+}
+
+@keyframes pageQiPulse {
+  from {
+    opacity: 0.72;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
 }
