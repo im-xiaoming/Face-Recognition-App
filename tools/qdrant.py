@@ -48,17 +48,24 @@ def search(query: torch.Tensor, limit=5):
     return outputs
 
     
+def _to_vector_list(vector):
+    if isinstance(vector, torch.Tensor):
+        return vector.detach().cpu().tolist()
+    if hasattr(vector, 'tolist'):
+        return vector.tolist()
+    return list(vector)
+
+
 def update(queries: list[tuple[int, torch.Tensor, dict]]):
     client, collection_name = _get_client()
-    
+
     client.upsert(
         collection_name=collection_name,
         points=[
-            PointStruct(id=id, vector=vector.tolist(), payload=payload) \
-                for id, vector, payload in queries
+            PointStruct(id=id, vector=_to_vector_list(vector), payload=payload)
+            for id, vector, payload in queries
         ]
     )
-    print("DONE!")
     
 
 def delete(ids: list[int]):

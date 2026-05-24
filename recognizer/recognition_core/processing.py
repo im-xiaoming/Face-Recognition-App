@@ -26,22 +26,39 @@ def _get_face_app():
     insightface_root = Path.home() / '.insightface'
     (insightface_root / 'models').mkdir(parents=True, exist_ok=True)
 
+    try:
+        import onnxruntime as ort
+        available = set(ort.get_available_providers())
+    except Exception:
+        available = set()
+
+    if 'CUDAExecutionProvider' in available:
+        providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+        ctx_id = 0
+    else:
+        providers = ['CPUExecutionProvider']
+        ctx_id = -1
+
     app = FaceAnalysis(
         name='buffalo_l',
         root=str(insightface_root),
-        providers=['CPUExecutionProvider'],
+        providers=providers,
     )
-    app.prepare(ctx_id=-1, det_size=(640, 640))
+    app.prepare(ctx_id=ctx_id, det_size=(640, 640))
     _cache['app'] = app
     return app
 
 
-def preprocess_face(image_path: str) -> tuple[np.ndarray, dict]:
+def preprocess_face(image_source) -> tuple[np.ndarray, dict]:
+    """image_source: filesystem path (str/Path) or a BGR numpy array already decoded."""
     app = _get_face_app()
 
-    img = cv2.imread(image_path)
-    if img is None:
-        raise ValueError("Không đọc được ảnh.")
+    if isinstance(image_source, np.ndarray):
+        img = image_source
+    else:
+        img = cv2.imread(str(image_source))
+        if img is None:
+            raise ValueError("Không đọc được ảnh.")
 
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     faces = app.get(img_rgb)

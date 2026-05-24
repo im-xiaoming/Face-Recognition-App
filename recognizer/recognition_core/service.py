@@ -1,11 +1,8 @@
 import logging
-import shutil
 from collections import defaultdict
-from pathlib import Path
-from uuid import uuid4
 
 import cv2
-from django.conf import settings
+import numpy as np
 
 from users.models import FacePose, UserEmbedding, UserModel
 
@@ -24,18 +21,15 @@ MULTI_POSE_BONUS = 0.01
 MAX_MULTI_POSE_BONUS = 0.03
 
 
-def _recognition_temp_dir() -> Path:
-    temp_dir = Path(settings.BASE_DIR) / 'media' / 'temp' / 'recognition' / uuid4().hex
-    temp_dir.mkdir(parents=True, exist_ok=True)
-    return temp_dir
-
-
-def _save_upload(image_file, temp_dir: Path) -> Path:
-    raw_path = temp_dir / 'frame.jpg'
-    with raw_path.open('wb+') as output:
-        for chunk in image_file.chunks():
-            output.write(chunk)
-    return raw_path
+def _decode_upload(image_file) -> np.ndarray:
+    buf = bytearray()
+    for chunk in image_file.chunks():
+        buf.extend(chunk)
+    arr = np.frombuffer(bytes(buf), dtype=np.uint8)
+    img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    if img is None:
+        raise ValueError("Không đọc được ảnh.")
+    return img
 
 
 def _complete_match_payload(match: dict) -> dict | None:
@@ -94,11 +88,9 @@ def recognize_frame(image_file) -> dict:
             'message': 'Chua co embedding nao trong database.',
         }
 
-    temp_dir = _recognition_temp_dir()
-
     try:
-        raw_path = _save_upload(image_file, temp_dir)
-        aligned, face_info = preprocess_face(str(raw_path))
+        frame_bgr = _decode_upload(image_file)
+        aligned, face_info = preprocess_face(frame_bgr)
         quality = estimate_pose_and_quality(aligned, face_info)
 
         if quality['reject']:
@@ -109,10 +101,8 @@ def recognize_frame(image_file) -> dict:
             }
 
         detected_pose = classify_pose(quality.get('yaw'))
-        aligned_path = temp_dir / 'aligned.jpg'
-        cv2.imwrite(str(aligned_path), cv2.cvtColor(aligned, cv2.COLOR_RGB2BGR))
 
-        embedding = inference([str(aligned_path)])[0]
+        embedding = inference([aligned])[0]
         matches = search(embedding, limit=SEARCH_LIMIT)
         candidates = _group_matches(matches, detected_pose)
 
@@ -165,5 +155,3 @@ def recognize_frame(image_file) -> dict:
             'status': 'error',
             'message': 'Khong the nhan dien frame nay.',
         }
-    finally:
-        shutil.rmtree(temp_dir, ignore_errors=True)

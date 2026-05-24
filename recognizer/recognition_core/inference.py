@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import numpy as np
 import torch
 from django.conf import settings
 from PIL import Image
@@ -9,8 +10,13 @@ from xiaoying.utils import get_model, load_weight
 _cache = {}
 
 
-def _load_image(path):
-    image = Image.open(path).convert('RGB')
+def _to_pil(item):
+    if isinstance(item, Image.Image):
+        return item.convert('RGB') if item.mode != 'RGB' else item
+    if isinstance(item, np.ndarray):
+        # Expect RGB uint8 HxWxC
+        return Image.fromarray(item)
+    image = Image.open(item).convert('RGB')
     image.load()
     return image
 
@@ -44,11 +50,12 @@ def _get_embedding_model():
     return model, transform, device
 
 
-def inference(files):
+def inference(items):
+    """Items may be file paths, PIL images, or RGB numpy arrays."""
     model, transform, device = _get_embedding_model()
-    images = torch.stack([transform(_load_image(path)) for path in files])
+    batch = torch.stack([transform(_to_pil(item)) for item in items]).to(device)
 
     with torch.no_grad():
-        embeddings, _ = model(images.to(device))
+        embeddings, _ = model(batch)
 
-    return embeddings
+    return embeddings.detach().cpu()
