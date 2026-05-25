@@ -7,6 +7,9 @@ let videoStream = null;
 let recognitionInterval = null;
 let transitionInProgress = false;
 const TEXT_MODE_STORAGE_KEY = 'face_app_text_mode';
+const AUTO_LOGOUT_DELAY_MS = 30 * 1000;
+const AUTO_LOGOUT_AT_KEY = 'face_app_auto_logout_at';
+let autoLogoutTimer = null;
 
 const NORMAL_TEXT_REPLACEMENTS = [
   ['Chính diện nhìn vào pháp kính', 'Nhìn thẳng vào camera'],
@@ -82,6 +85,22 @@ function getSavedTextMode() {
 
 function canSwitchTextMode() {
   return document.body && document.body.dataset.canSwitchText === 'true';
+}
+
+function isAuthenticatedSession() {
+  return document.body && document.body.dataset.isAuthenticated === 'true';
+}
+
+function getCsrfToken() {
+  const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+  if (tokenMeta && tokenMeta.content && tokenMeta.content !== 'NOTPROVIDED') {
+    return tokenMeta.content;
+  }
+
+  const tokenCookie = document.cookie
+    .split('; ')
+    .find((part) => part.startsWith('csrftoken='));
+  return tokenCookie ? decodeURIComponent(tokenCookie.split('=')[1]) : '';
 }
 
 function localizeText(message) {
@@ -161,6 +180,70 @@ function applyTextMode(normalMode, persist = true) {
       toggle.removeAttribute('title');
     }
   }
+}
+
+function resetTextModeToDefault() {
+  localStorage.removeItem(TEXT_MODE_STORAGE_KEY);
+  applyTextMode(false, false);
+}
+
+function applyLoggedOutState() {
+  if (!document.body) return;
+
+  document.body.dataset.isAuthenticated = 'false';
+  document.body.dataset.canSwitchText = 'false';
+  sessionStorage.removeItem(AUTO_LOGOUT_AT_KEY);
+  resetTextModeToDefault();
+}
+
+async function logoutWithoutReload() {
+  if (!isAuthenticatedSession()) return;
+
+  const url = document.body.dataset.autoLogoutUrl;
+  if (!url) {
+    applyLoggedOutState();
+    return;
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'X-CSRFToken': getCsrfToken(),
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    });
+
+    if (response.ok) {
+      applyLoggedOutState();
+    }
+  } catch (error) {
+    console.warn('Auto logout failed', error);
+  }
+}
+
+function startAutoLogoutTimer() {
+  if (autoLogoutTimer) {
+    clearTimeout(autoLogoutTimer);
+    autoLogoutTimer = null;
+  }
+
+  if (!isAuthenticatedSession()) return;
+
+  let logoutAt = Number(sessionStorage.getItem(AUTO_LOGOUT_AT_KEY));
+  if (!logoutAt) {
+    logoutAt = Date.now() + AUTO_LOGOUT_DELAY_MS;
+    sessionStorage.setItem(AUTO_LOGOUT_AT_KEY, String(logoutAt));
+  }
+
+  const remainingMs = logoutAt - Date.now();
+  if (remainingMs <= 0) {
+    logoutWithoutReload();
+    return;
+  }
+
+  autoLogoutTimer = window.setTimeout(logoutWithoutReload, remainingMs);
 }
 
 window.localizeText = localizeText;
@@ -418,6 +501,7 @@ document.addEventListener('click', function(e) {
 
 document.addEventListener('DOMContentLoaded', function() {
   applyTextMode(getSavedTextMode(), false);
+  startAutoLogoutTimer();
   document.body.classList.add('page-enter');
 
   const toggle = document.getElementById('text-mode-toggle');
@@ -433,6 +517,15 @@ window.addEventListener('pageshow', function() {
   transitionInProgress = false;
   document.body.classList.remove('is-leaving');
   document.body.classList.add('page-enter');
+  startAutoLogoutTimer();
+});
+
+window.addEventListener('focus', startAutoLogoutTimer);
+
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    startAutoLogoutTimer();
+  }
 });
 
 document.addEventListener('click', function(event) {

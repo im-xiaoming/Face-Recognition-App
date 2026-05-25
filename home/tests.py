@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -50,6 +51,27 @@ class TextModeProtectionTests(TestCase):
         self.assertContains(response, 'data-can-switch-text="false"')
         self.assertContains(response, 'disabled title=')
 
+    def test_auto_logout_endpoint_logs_user_out_without_redirect(self):
+        admin = User.objects.create_user(
+            username='timed-admin',
+            password='admin-password',
+            is_staff=True,
+        )
+        self.client.force_login(admin)
+        session = self.client.session
+        session[SERVER_SESSION_KEY] = SERVER_SESSION_TOKEN
+        session.save()
+
+        response = self.client.post('/auto-logout/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['authenticated'], False)
+        self.assertEqual(response.json()['logged_out'], True)
+
+        response = self.client.get('/')
+        self.assertContains(response, 'data-is-authenticated="false"')
+        self.assertContains(response, 'data-can-switch-text="false"')
+
     def test_han_viet_copy_and_normal_copy_are_kept(self):
         response = self.client.get('/')
 
@@ -78,9 +100,18 @@ class TextModeProtectionTests(TestCase):
         required_guards = [
             'request.user.is_authenticated',
             'request.user.is_staff',
+            'data-is-authenticated',
             'data-can-switch-text',
+            'data-auto-logout-url',
+            'app.js',
+            'auto-logout-2',
             'disabled title=',
             'LogoutOnServerRestartMiddleware',
+            'AUTO_LOGOUT_DELAY_MS = 60 * 1000',
+            'AUTO_LOGOUT_AT_KEY',
+            'logoutWithoutReload()',
+            'applyLoggedOutState()',
+            'startAutoLogoutTimer()',
             'canSwitchTextMode()',
             'localStorage.removeItem(TEXT_MODE_STORAGE_KEY)',
         ]
@@ -89,3 +120,5 @@ class TextModeProtectionTests(TestCase):
         for guard in required_guards:
             with self.subTest(guard=guard):
                 self.assertIn(guard, combined)
+
+        self.assertEqual(settings.SESSION_COOKIE_AGE, 60)

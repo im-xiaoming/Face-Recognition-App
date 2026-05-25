@@ -11,10 +11,27 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def load_env_file(path):
+    if not path.exists():
+        return
+
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
+
+
+load_env_file(BASE_DIR / ".env")
 
 
 # Allow importing sibling packages (e.g. MMDF_) located next to this Django project
@@ -83,15 +100,46 @@ TEMPLATES = [
 WSGI_APPLICATION = "face_app.wsgi.application"
 
 
+def sqlite_database():
+    return {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+
+
+def postgres_database():
+    options = {}
+    if os.environ.get("PGSSLMODE"):
+        options["sslmode"] = os.environ["PGSSLMODE"]
+
+    config = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ["PGDATABASE"],
+            "USER": os.environ["PGUSER"],
+            "PASSWORD": os.environ["PGPASSWORD"],
+            "HOST": os.environ["PGHOST"],
+            "PORT": os.environ.get("PGPORT", "5432"),
+        }
+    }
+
+    if options:
+        config["default"]["OPTIONS"] = options
+
+    return config
+
+
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+POSTGRES_ENV_KEYS = ("PGHOST", "PGDATABASE", "PGUSER", "PGPASSWORD")
+
+if all(os.environ.get(key) for key in POSTGRES_ENV_KEYS) and "test" not in sys.argv:
+    DATABASES = postgres_database()
+else:
+    DATABASES = sqlite_database()
 
 
 # Password validation
@@ -140,3 +188,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Keep authenticated sessions short; the frontend mirrors this with a no-reload
+# auto logout so the current page immediately returns to the default text style.
+SESSION_COOKIE_AGE = 30

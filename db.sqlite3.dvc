@@ -1,5 +1,0 @@
-outs:
-- md5: e92d39d3db03d91350b37a0f3775f673
-  size: 167936
-  hash: md5
-  path: db.sqlite3
