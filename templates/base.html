@@ -13,6 +13,7 @@
   {% block css %}{% endblock %}
 </head>
 <body
+  class="{% block body_class %}{% endblock %}"
   data-is-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}"
   data-can-switch-text="{% if request.user.is_authenticated and request.user.is_staff %}true{% else %}false{% endif %}"
   data-auto-logout-url="{% url 'auto-logout' %}"

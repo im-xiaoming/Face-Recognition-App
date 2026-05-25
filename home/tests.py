@@ -73,7 +73,7 @@ class TextModeProtectionTests(TestCase):
         self.assertContains(response, 'data-can-switch-text="false"')
 
     def test_han_viet_copy_and_normal_copy_are_kept(self):
-        response = self.client.get('/')
+        response = self.client.get('/home/')
 
         required_copy = [
             'Luân Hồi Truy Diện Kính',
@@ -92,6 +92,15 @@ class TextModeProtectionTests(TestCase):
             with self.subTest(text=text):
                 self.assertContains(response, text)
 
+    def test_landing_page_shows_image_quote_and_main_button(self):
+        response = self.client.get('/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'images/nguyn.jpg')
+        self.assertContains(response, 'Nhân sinh như ảnh chiếu qua linh kính')
+        self.assertContains(response, 'href="/home/"')
+        self.assertContains(response, 'Nhập Đạo')
+
     def test_admin_gate_is_preserved_in_template_and_javascript(self):
         base_template = Path('templates/base.html').read_text(encoding='utf-8')
         settings_py = Path('face_app/settings.py').read_text(encoding='utf-8')
@@ -107,7 +116,7 @@ class TextModeProtectionTests(TestCase):
             'auto-logout-2',
             'disabled title=',
             'LogoutOnServerRestartMiddleware',
-            'AUTO_LOGOUT_DELAY_MS = 60 * 1000',
+            'AUTO_LOGOUT_DELAY_MS = 30 * 1000',
             'AUTO_LOGOUT_AT_KEY',
             'logoutWithoutReload()',
             'applyLoggedOutState()',
@@ -121,4 +130,4 @@ class TextModeProtectionTests(TestCase):
             with self.subTest(guard=guard):
                 self.assertIn(guard, combined)
 
-        self.assertEqual(settings.SESSION_COOKIE_AGE, 60)
+        self.assertEqual(settings.SESSION_COOKIE_AGE, 30)

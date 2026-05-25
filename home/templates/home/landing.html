@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  <title data-normal-text="Cổng vào ứng dụng nhận diện khuôn mặt">Luân Hồi Truy Diện Kính</title>
+{% endblock %}
+
+{% block body_class %}landing-page{% endblock %}
+
+{% block content %}
+  <main class="landing-shell" aria-label="Luân Hồi Truy Diện Kính">
+    <section class="landing-portrait" aria-label="Chân ảnh">
+      <img src="{% static 'images/nguyn.jpg' %}" alt="Chân ảnh tu tiên" class="landing-image">
+    </section>
+
+    <section class="landing-copy">
+      <h1 class="landing-title" data-normal-text="Ứng dụng nhận diện khuôn mặt">Luân Hồi Truy Diện Kính</h1>
+      <p class="landing-quote" data-normal-text="Đời người như một lần qua ảnh: giữ tâm sáng, bước chậm, rồi khuôn mặt thật sẽ tự hiện ra.">
+        Nhân sinh như ảnh chiếu qua linh kính: tâm bất loạn, đạo tự minh.
+      </p>
+      <a href="{% url 'home' %}" class="landing-enter-btn" data-normal-text="Vào trang chính">
+        Nhập Đạo
+      </a>
+    </section>
+  </main>
+{% endblock %}
