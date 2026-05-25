@@ -40,14 +40,14 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   margin: 18px auto 0;
-  max-width: 320px;
+  max-width: 360px;
 }
 
 .capture-step {
   border: 1px solid #ddd;
   border-radius: 8px;
   color: #666;
-  font-size: 13px;
+  font-size: var(--font-meta);
   padding: 9px 0;
 }
 
@@ -60,4 +60,16 @@
 .error-status {
   background: #ffebee;
   color: #b71c1c;
+}
+
+@media (min-width: 640px) {
+  .capture-steps {
+    max-width: 390px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .capture-steps {
+    max-width: 420px;
+  }
 }

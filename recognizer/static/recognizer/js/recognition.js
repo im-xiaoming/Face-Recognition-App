@@ -85,7 +85,7 @@
     ctx.strokeRect(dx, dy, dw, dh);
 
     if (label) {
-      const fontSize = Math.max(12, cssW * 0.022);
+      const fontSize = Math.min(Math.max(15, cssW * 0.026), 24);
       ctx.font = `${fontSize}px "TP Han Zi", sans-serif`;
       const padding = fontSize * 0.3;
       const textWidth = ctx.measureText(label).width;

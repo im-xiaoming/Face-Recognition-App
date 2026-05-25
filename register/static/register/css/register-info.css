@@ -5,7 +5,7 @@
 
 .form-label {
     display: block;
-    font-size: 13px;
+    font-size: var(--font-small);
     font-weight: 500;
     color: #666;
     margin-bottom: 8px;
@@ -16,7 +16,7 @@ width: 100%;
 padding: 14px 16px;
 border: 2px solid #e5e5e5;
 border-radius: 12px;
-font-size: 16px;
+font-size: var(--font-ui);
 color: #333;
 background: #fff;
 outline: none;
@@ -35,7 +35,7 @@ box-sizing: border-box;
     color: #fff;
     border: none;
     border-radius: 12px;
-    font-size: 16px;
+    font-size: var(--font-ui);
     font-weight: 500;
     cursor: pointer;
     transition: background 0.2s;
@@ -48,7 +48,7 @@ box-sizing: border-box;
 
 .error-msg {
     color: #e53935;
-    font-size: 14px;
+    font-size: var(--font-small);
     margin-bottom: 20px;
     padding: 12px 16px;
     background: #fff5f5;
