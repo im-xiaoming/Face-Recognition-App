@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-  <title>Danh Sách Đạo Hữu</title>
+  <title data-normal-text="Danh sách người dùng">Danh Sách Đạo Hữu</title>
 {% endblock %}
 
 
@@ -15,8 +15,8 @@
   </a>
 
   <div class="container">
-    <h1 class="page-title">Danh Sách Đạo Hữu</h1>
-    <p class="subtitle">Những người đã lưu danh trong Thiên Nhãn Linh Kính</p>
+    <h1 class="page-title" data-normal-text="Danh sách người dùng">Danh Sách Đạo Hữu</h1>
+    <p class="subtitle" data-normal-text="Người dùng đã đăng ký trong hệ thống">Những người đã lưu danh trong Thiên Nhãn Linh Kính</p>
     
     <div class="user-list" id="user-list">
       {% for user in users %}
@@ -25,8 +25,8 @@
           <div class="user-avatar">{{ user.name|first|upper }}</div>
           <div class="user-info">
             <div class="user-name">{{ user.name }}</div>
-            <div class="user-detail">Mã số: {{ user.id }} | Niên sinh: {{ user.dob }}</div>
-            <div class="user-detail">Cảnh giới: {{ user.cultivation_label }}</div>
+            <div class="user-detail" data-localize-text>Mã số: {{ user.id }} | Niên sinh: {{ user.dob }}</div>
+            <div class="user-detail" data-localize-text>Cảnh giới: {{ user.cultivation_label }}</div>
           </div>
         </div>
       {% endfor %}

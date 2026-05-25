@@ -6,6 +6,149 @@
 let videoStream = null;
 let recognitionInterval = null;
 let transitionInProgress = false;
+const TEXT_MODE_STORAGE_KEY = 'face_app_text_mode';
+
+const NORMAL_TEXT_REPLACEMENTS = [
+  ['Chính diện nhìn vào pháp kính', 'Nhìn thẳng vào camera'],
+  ['Nhìn thẳng vào pháp kính', 'Nhìn thẳng vào camera'],
+  ['Xoay sang tả diện', 'Xoay mặt sang trái'],
+  ['Xoay sang hữu diện', 'Xoay mặt sang phải'],
+  ['Chưa thấy linh diện', 'Chưa thấy khuôn mặt'],
+  ['Chỉ giữ một đạo hữu trong khung', 'Chỉ để một người trong khung'],
+  ['Tiến lại gần pháp trận hơn', 'Tiến lại gần khung hơn'],
+  ['Tăng linh quang sáng hơn', 'Tăng ánh sáng'],
+  ['Đưa linh diện vào trong pháp trận', 'Đưa khuôn mặt vào trong khung'],
+  ['Tĩnh tâm giữ yên...', 'Giữ yên...'],
+  ['Đang phong ấn linh ảnh...', 'Đang lưu ảnh...'],
+  ['Không tải được linh trận nhận diện', 'Không tải được mô hình nhận diện'],
+  ['Đang đưa linh ảnh video lên hậu sơn...', 'Đang tải video lên server...'],
+  ['Backend đang luyện hóa từng frame và phát lại video đã vẽ khung.', 'Backend đang xử lý từng khung hình và phát lại video đã vẽ khung.'],
+  ['Đang phát video đã xử lý từ backend. Khung xanh được vẽ trực tiếp lên frame.', 'Đang phát video đã xử lý từ backend. Khung xanh được vẽ trực tiếp lên từng khung hình.'],
+  ['Đang đối chiếu linh tức...', 'Đang đối chiếu dữ liệu...'],
+  ['Đang khai mở pháp kính...', 'Đang mở camera...'],
+  ['Đã khép pháp kính', 'Đã tắt camera'],
+  ['Đã ghi danh linh diện thành công!', 'Đã đăng ký khuôn mặt thành công!'],
+  ['Vui lòng chọn ảnh linh diện trước', 'Vui lòng chọn ảnh khuôn mặt trước'],
+  ['Chưa có đạo hữu nào lưu danh', 'Chưa có người dùng nào được đăng ký'],
+  ['Thiên nhãn đang dò linh diện...', 'Đang nhận diện khuôn mặt...'],
+  ['Thiên nhãn nhiễu loạn', 'Lỗi nhận diện'],
+  ['Linh Kính nhiễu loạn', 'Lỗi xử lý'],
+  ['Thiên Nhãn Linh Kính', 'Ứng dụng nhận diện khuôn mặt'],
+  ['Linh Kính', 'Hệ thống'],
+  ['Thiên nhãn', 'Hệ thống'],
+  ['thiên nhãn', 'hệ thống'],
+  ['pháp kính', 'camera'],
+  ['Pháp kính', 'Camera'],
+  ['linh kính', 'hệ thống'],
+  ['linh trận nhận diện', 'mô hình nhận diện'],
+  ['linh ảnh video', 'video'],
+  ['linh ảnh', 'ảnh'],
+  ['Linh ảnh', 'Ảnh'],
+  ['linh diện', 'khuôn mặt'],
+  ['Linh diện', 'Khuôn mặt'],
+  ['đạo hữu', 'người dùng'],
+  ['Đạo hữu', 'Người dùng'],
+  ['Đạo Hữu', 'Người Dùng'],
+  ['đạo danh', 'tên'],
+  ['Đạo danh', 'Họ tên'],
+  ['cảnh giới', 'cấp độ'],
+  ['Cảnh giới', 'Cấp độ'],
+  ['Niên sinh', 'Ngày sinh'],
+  ['Mã số', 'Mã người dùng'],
+  ['pháp trận', 'khung'],
+  ['Pháp trận', 'Khung'],
+  ['pháp môn', 'cách'],
+  ['pháp bảo', 'hệ thống'],
+  ['linh quang', 'ánh sáng'],
+  ['linh tức', 'dữ liệu'],
+  ['lưu danh', 'đăng ký'],
+  ['ghi danh', 'đăng ký'],
+  ['khai mở', 'mở'],
+  ['khép', 'tắt'],
+  ['nhiễu loạn', 'lỗi'],
+  ['luyện hóa', 'xử lý'],
+  ['hậu sơn', 'server'],
+  ['phong ấn', 'lưu'],
+  ['Tả Diện', 'Quay trái'],
+  ['Hữu Diện', 'Quay phải'],
+  ['Chính Diện', 'Nhìn thẳng'],
+  ['tả diện', 'bên trái'],
+  ['hữu diện', 'bên phải'],
+];
+
+function getSavedTextMode() {
+  return localStorage.getItem(TEXT_MODE_STORAGE_KEY) === 'normal';
+}
+
+function localizeText(message) {
+  if (!getSavedTextMode() || typeof message !== 'string') return message;
+
+  let output = message;
+  NORMAL_TEXT_REPLACEMENTS.forEach(([from, to]) => {
+    output = output.split(from).join(to);
+  });
+  return output;
+}
+
+function getOwnText(element) {
+  const textNode = Array.from(element.childNodes).find((node) =>
+    node.nodeType === Node.TEXT_NODE && node.nodeValue.trim()
+  );
+  return textNode ? textNode.nodeValue.trim() : element.textContent.trim();
+}
+
+function setOwnText(element, text) {
+  const textNode = Array.from(element.childNodes).find((node) =>
+    node.nodeType === Node.TEXT_NODE && node.nodeValue.trim()
+  );
+
+  if (!textNode) {
+    element.textContent = text;
+    return;
+  }
+
+  const current = textNode.nodeValue;
+  const leading = current.match(/^\s*/)[0];
+  const trailing = current.match(/\s*$/)[0];
+  textNode.nodeValue = `${leading}${text}${trailing}`;
+}
+
+function applyTextMode(normalMode, persist = true) {
+  if (persist) {
+    localStorage.setItem(TEXT_MODE_STORAGE_KEY, normalMode ? 'normal' : 'themed');
+  }
+
+  document.body.classList.toggle('normal-language', normalMode);
+
+  document.querySelectorAll('[data-normal-text]').forEach((element) => {
+    if (!element.dataset.themedText) {
+      element.dataset.themedText = getOwnText(element);
+    }
+    setOwnText(element, normalMode ? element.dataset.normalText : element.dataset.themedText);
+  });
+
+  document.querySelectorAll('[data-localize-text], option').forEach((element) => {
+    if (!element.dataset.themedText) {
+      element.dataset.themedText = getOwnText(element);
+    }
+    setOwnText(element, normalMode ? localizeText(element.dataset.themedText) : element.dataset.themedText);
+  });
+
+  document.querySelectorAll('[data-normal-title]').forEach((element) => {
+    if (!element.dataset.themedTitle) {
+      element.dataset.themedTitle = element.getAttribute('title') || '';
+    }
+    element.setAttribute('title', normalMode ? element.dataset.normalTitle : element.dataset.themedTitle);
+  });
+
+  const toggle = document.getElementById('text-mode-toggle');
+  if (toggle) {
+    toggle.textContent = normalMode ? 'Phong cách Hán Việt' : 'Chữ thường';
+    toggle.setAttribute('aria-pressed', String(normalMode));
+  }
+}
+
+window.localizeText = localizeText;
 
 function shouldAnimateNavigation(event, link) {
   if (!link || transitionInProgress) return false;
@@ -138,10 +281,10 @@ function previewImage(event) {
   const statusEl = document.getElementById('status');
   if (statusEl) {
     if (count < 2) {
-      statusEl.textContent = `Vui lòng chọn ít nhất 2 ảnh linh diện (đang chọn ${count})`;
+      statusEl.textContent = localizeText(`Vui lòng chọn ít nhất 2 ảnh linh diện (đang chọn ${count})`);
       statusEl.style.display = 'block';
     } else if (count > 5) {
-      statusEl.textContent = `Tối đa 5 ảnh linh diện (đang chọn ${count})`;
+      statusEl.textContent = localizeText(`Tối đa 5 ảnh linh diện (đang chọn ${count})`);
       statusEl.style.display = 'block';
     } else {
       statusEl.style.display = 'none';
@@ -236,7 +379,7 @@ function startRecognition() {
 function showStatus(message) {
   const status = document.getElementById('status');
   if (status) {
-    status.textContent = message;
+    status.textContent = localizeText(message);
     status.style.display = 'block';
   }
 }
@@ -259,7 +402,15 @@ document.addEventListener('click', function(e) {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+  applyTextMode(getSavedTextMode(), false);
   document.body.classList.add('page-enter');
+
+  const toggle = document.getElementById('text-mode-toggle');
+  if (toggle) {
+    toggle.addEventListener('click', function() {
+      applyTextMode(!getSavedTextMode());
+    });
+  }
 });
 
 window.addEventListener('pageshow', function() {

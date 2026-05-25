@@ -26,8 +26,11 @@
     </svg>
   </button>
   <div class="menu-dropdown" id="menu">
-    <a href="{% url 'home' %}" class="menu-item">Đạo Môn</a>
-    <a href="{% url 'users' %}" class="menu-item">Danh Sách Đạo Hữu</a>
+    <a href="{% url 'home' %}" class="menu-item" data-normal-text="Trang chủ">Đạo Môn</a>
+    <a href="{% url 'users' %}" class="menu-item" data-normal-text="Danh sách người dùng">Danh Sách Đạo Hữu</a>
+    <button type="button" class="menu-item text-mode-toggle" id="text-mode-toggle" aria-pressed="false">
+      Chữ thường
+    </button>
   </div>
 
   {% block content %}{% endblock %}

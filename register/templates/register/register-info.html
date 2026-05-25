@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-  <title>Hồ Sơ Đạo Hữu</title>
+  <title data-normal-text="Thông tin người dùng">Hồ Sơ Đạo Hữu</title>
 {% endblock %}
 
 {% block css %}
@@ -18,8 +18,8 @@
   </a>
 
   <div class="container">
-    <h1 class="title">Hồ Sơ Đạo Hữu</h1>
-    <p class="subtitle">Khai đạo danh và cảnh giới hiện tại</p>
+    <h1 class="title" data-normal-text="Thông tin người dùng">Hồ Sơ Đạo Hữu</h1>
+    <p class="subtitle" data-normal-text="Nhập tên và thông tin hiện tại">Khai đạo danh và cảnh giới hiện tại</p>
 
     {% if success %}
       <div class="status">Ghi danh thành công!</div>
@@ -32,7 +32,7 @@
         {% csrf_token %}
 
         <div class="form-group">
-          <label class="form-label" for="name">Đạo danh</label>
+          <label class="form-label" for="name" data-normal-text="Họ tên">Đạo danh</label>
           {% if form.name.errors %}
             <ul class="error-msg ">
               {% for error in form.name.errors %}
@@ -44,7 +44,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="cultivation">Cảnh giới</label>
+          <label class="form-label" for="cultivation" data-normal-text="Cấp độ">Cảnh giới</label>
           {% if form.cultivation.errors %}
             <ul class="error-msg ">
               {% for error in form.cultivation.errors %}
@@ -56,7 +56,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="dob">Niên sinh</label>
+          <label class="form-label" for="dob" data-normal-text="Ngày sinh">Niên sinh</label>
           {% if form.dob.errors %}
             <ul class="error-msg ">
               {% for error in form.dob.errors %}

@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-  <title>Nhập Môn Ghi Danh</title>
+  <title data-normal-text="Đăng ký người dùng">Nhập Môn Ghi Danh</title>
 {% endblock %}
 
 
@@ -14,15 +14,15 @@
   </a>
 
   <div class="container">
-    <h1 class="title">Nhập Môn Ghi Danh</h1>
-    <p class="subtitle">Chọn pháp môn lưu lại linh diện</p>
+    <h1 class="title" data-normal-text="Đăng ký người dùng">Nhập Môn Ghi Danh</h1>
+    <p class="subtitle" data-normal-text="Chọn cách thêm ảnh khuôn mặt">Chọn pháp môn lưu lại linh diện</p>
     
     <a href="{% url 'register-camera' %}" class="option-btn">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <rect x="2" y="5" width="20" height="14" rx="2"/>
         <circle cx="12" cy="12" r="3"/>
       </svg>
-      Khai Kính Linh Ảnh
+      <span data-normal-text="Chụp ảnh bằng camera">Khai Kính Linh Ảnh</span>
     </a>
     
     <a href="{% url 'register-upload' %}" class="option-btn">
@@ -31,7 +31,7 @@
         <polyline points="17 8 12 3 7 8"/>
         <line x1="12" y1="3" x2="12" y2="15"/>
       </svg>
-      Nạp Ảnh Linh Diện
+      <span data-normal-text="Tải ảnh khuôn mặt">Nạp Ảnh Linh Diện</span>
     </a>
   </div>
 {% endblock %}

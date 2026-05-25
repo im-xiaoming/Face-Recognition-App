@@ -72,6 +72,9 @@
       color = '#f59e0b';
       label = result.message || 'Linh ảnh chưa đạt';
     }
+    if (label && window.localizeText) {
+      label = window.localizeText(label);
+    }
 
     const { x, y, w, h } = result.bbox;
     const mirroredX = fw - (x + w);

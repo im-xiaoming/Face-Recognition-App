@@ -109,10 +109,11 @@
     const status = el('status');
     const hint = el('camera-hint');
     const arrow = el('direction-arrow');
+    const displayMessage = window.localizeText ? window.localizeText(message) : message;
 
-    if (hint) hint.textContent = message;
+    if (hint) hint.textContent = displayMessage;
     if (status) {
-      status.textContent = message;
+      status.textContent = displayMessage;
       status.style.display = 'block';
     }
     if (arrow) {

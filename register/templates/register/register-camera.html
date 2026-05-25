@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-  <title>Khai Kính Linh Ảnh</title>
+  <title data-normal-text="Chụp ảnh khuôn mặt">Khai Kính Linh Ảnh</title>
 {% endblock %}
 
 {% block css %}
@@ -17,8 +17,8 @@
   </a>
 
   <div class="container">
-    <h1 class="title">Khai Kính Linh Ảnh</h1>
-    <p class="subtitle">Giữ diện mạo trong pháp trận để ghi danh</p>
+    <h1 class="title" data-normal-text="Chụp ảnh khuôn mặt">Khai Kính Linh Ảnh</h1>
+    <p class="subtitle" data-normal-text="Đặt khuôn mặt trong khung để chụp ảnh đăng ký">Giữ diện mạo trong pháp trận để ghi danh</p>
 
     <form id="camera-register-form" method="post" enctype="multipart/form-data">
       {% csrf_token %}
@@ -32,16 +32,16 @@
       <div id="direction-arrow" class="direction-arrow" aria-hidden="true"></div>
     </div>
 
-    <p id="camera-hint" class="hint">Đưa linh diện vào pháp trận</p>
+    <p id="camera-hint" class="hint" data-normal-text="Đưa khuôn mặt vào khung">Đưa linh diện vào pháp trận</p>
 
     <div class="capture-steps" aria-label="Các góc diện mạo đã lưu">
-      <span id="step-front" class="capture-step">Chính Diện</span>
-      <span id="step-left" class="capture-step">Tả Diện</span>
-      <span id="step-right" class="capture-step">Hữu Diện</span>
+      <span id="step-front" class="capture-step" data-normal-text="Nhìn thẳng">Chính Diện</span>
+      <span id="step-left" class="capture-step" data-normal-text="Quay trái">Tả Diện</span>
+      <span id="step-right" class="capture-step" data-normal-text="Quay phải">Hữu Diện</span>
     </div>
 
     <div class="camera-controls">
-      <button id="restart-camera-btn" class="control-btn capture-btn" type="button" title="Khai lại pháp kính">
+      <button id="restart-camera-btn" class="control-btn capture-btn" type="button" title="Khai lại pháp kính" data-normal-title="Chụp lại">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path d="M21 12a9 9 0 11-3-6.7"/>
           <path d="M21 3v6h-6"/>

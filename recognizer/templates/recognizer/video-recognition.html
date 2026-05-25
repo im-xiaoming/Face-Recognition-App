@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-  <title>Linh Ảnh Lưu Chuyển</title>
+  <title data-normal-text="Nhận diện bằng video">Linh Ảnh Lưu Chuyển</title>
 {% endblock %}
 
 {% block css %}
@@ -91,8 +91,8 @@
   </a>
 
   <div class="container">
-    <h1 class="title">Linh Ảnh Lưu Chuyển</h1>
-    <p class="subtitle">Tải video lên, phát ngay và để Linh Kính dò mọi linh diện trong từng frame</p>
+    <h1 class="title" data-normal-text="Nhận diện bằng video">Linh Ảnh Lưu Chuyển</h1>
+    <p class="subtitle" data-normal-text="Tải video lên để hệ thống nhận diện khuôn mặt trong từng khung hình">Tải video lên, phát ngay và để Linh Kính dò mọi linh diện trong từng frame</p>
 
     <div class="video-tools">
       <label class="video-select-btn" for="video-file">
@@ -101,17 +101,17 @@
           <polyline points="17 8 12 3 7 8"/>
           <line x1="12" y1="3" x2="12" y2="15"/>
         </svg>
-        Chọn linh ảnh video
+        <span data-normal-text="Chọn video">Chọn linh ảnh video</span>
       </label>
       <input id="video-file" class="video-file-input" type="file" accept="video/*" data-video-upload-url="{% url 'video-upload-api' %}">
     </div>
 
     <div class="video-stage">
       <img id="processed-video" class="processed-video" alt="Video đã xử lý từ backend">
-      <div id="video-placeholder" class="video-placeholder">Chọn một video để backend luyện hóa từng frame</div>
+      <div id="video-placeholder" class="video-placeholder" data-normal-text="Chọn một video để hệ thống xử lý từng khung hình">Chọn một video để backend luyện hóa từng frame</div>
     </div>
 
-    <div id="status" class="status">Đang chờ linh ảnh video...</div>
+    <div id="status" class="status" data-normal-text="Đang chờ video...">Đang chờ linh ảnh video...</div>
   </div>
 {% endblock %}
 
