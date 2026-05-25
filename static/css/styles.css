@@ -516,6 +516,26 @@ textarea {
   background: #f5f5f5;
 }
 
+.menu-item:disabled {
+  color: #aaa;
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: none;
+  box-shadow: none;
+  transform: none;
+}
+
+.menu-item:disabled:hover,
+.menu-item:disabled:active,
+.menu-item:disabled:focus {
+  color: #aaa;
+  opacity: 0.5;
+  background: none;
+  box-shadow: none;
+  transform: none;
+  outline: none;
+}
+
 .text-mode-toggle {
   border-top: 1px solid #e5e5e5;
 }

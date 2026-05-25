@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="{% static 'css/styles.css' %}">
   {% block css %}{% endblock %}
 </head>
-<body>
+<body data-can-switch-text="{% if request.user.is_authenticated and request.user.is_staff %}true{% else %}false{% endif %}">
   <canvas id="cultivation-bg" class="cultivation-bg" aria-hidden="true"></canvas>
   <div class="transition-veil" aria-hidden="true">
     <div class="veil-ring"></div>
@@ -28,8 +28,14 @@
   <div class="menu-dropdown" id="menu">
     <a href="{% url 'home' %}" class="menu-item" data-normal-text="Trang chủ">Đạo Môn</a>
     <a href="{% url 'users' %}" class="menu-item" data-normal-text="Danh sách người dùng">Danh Sách Đạo Hữu</a>
-    <button type="button" class="menu-item text-mode-toggle" id="text-mode-toggle" aria-pressed="false">
-      Chữ thường
+    <button
+      type="button"
+      class="menu-item text-mode-toggle"
+      id="text-mode-toggle"
+      aria-pressed="false"
+      {% if not request.user.is_authenticated or not request.user.is_staff %}disabled title="Chỉ admin mới đổi được chế độ chữ"{% endif %}
+    >
+        Chữ thường
     </button>
   </div>
 

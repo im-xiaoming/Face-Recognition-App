@@ -77,7 +77,11 @@ const NORMAL_TEXT_REPLACEMENTS = [
 ];
 
 function getSavedTextMode() {
-  return localStorage.getItem(TEXT_MODE_STORAGE_KEY) === 'normal';
+  return canSwitchTextMode() && localStorage.getItem(TEXT_MODE_STORAGE_KEY) === 'normal';
+}
+
+function canSwitchTextMode() {
+  return document.body && document.body.dataset.canSwitchText === 'true';
 }
 
 function localizeText(message) {
@@ -114,6 +118,11 @@ function setOwnText(element, text) {
 }
 
 function applyTextMode(normalMode, persist = true) {
+  if (!canSwitchTextMode()) {
+    normalMode = false;
+    localStorage.removeItem(TEXT_MODE_STORAGE_KEY);
+  }
+
   if (persist) {
     localStorage.setItem(TEXT_MODE_STORAGE_KEY, normalMode ? 'normal' : 'themed');
   }
@@ -145,6 +154,12 @@ function applyTextMode(normalMode, persist = true) {
   if (toggle) {
     toggle.textContent = normalMode ? 'Phong cách Hán Việt' : 'Chữ thường';
     toggle.setAttribute('aria-pressed', String(normalMode));
+    toggle.disabled = !canSwitchTextMode();
+    if (!canSwitchTextMode()) {
+      toggle.setAttribute('title', 'Chỉ admin mới đổi được chế độ chữ');
+    } else {
+      toggle.removeAttribute('title');
+    }
   }
 }
 
@@ -408,6 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const toggle = document.getElementById('text-mode-toggle');
   if (toggle) {
     toggle.addEventListener('click', function() {
+      if (!canSwitchTextMode()) return;
       applyTextMode(!getSavedTextMode());
     });
   }
