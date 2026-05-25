@@ -1,5 +1,5 @@
 /**
- * Thiên Nhãn Linh Kính - Main JavaScript
+ * Luân Hồi Truy Diện Kính - Main JavaScript
  * Chứa các hàm dùng chung cho camera và xử lý ảnh
  */
 
@@ -33,7 +33,7 @@ const NORMAL_TEXT_REPLACEMENTS = [
   ['Thiên nhãn đang dò linh diện...', 'Đang nhận diện khuôn mặt...'],
   ['Thiên nhãn nhiễu loạn', 'Lỗi nhận diện'],
   ['Linh Kính nhiễu loạn', 'Lỗi xử lý'],
-  ['Thiên Nhãn Linh Kính', 'Ứng dụng nhận diện khuôn mặt'],
+  ['Luân Hồi Truy Diện Kính', 'Ứng dụng nhận diện khuôn mặt'],
   ['Linh Kính', 'Hệ thống'],
   ['Thiên nhãn', 'Hệ thống'],
   ['thiên nhãn', 'hệ thống'],

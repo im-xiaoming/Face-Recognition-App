@@ -32,7 +32,7 @@ class TextModeProtectionTests(TestCase):
         response = self.client.get('/')
 
         required_copy = [
-            'Thiên Nhãn Linh Kính',
+            'Luân Hồi Truy Diện Kính',
             'Cực Đạo Đế Binh',
             'Khai Kính Dò Linh Diện',
             'Linh Ảnh Lưu Chuyển',

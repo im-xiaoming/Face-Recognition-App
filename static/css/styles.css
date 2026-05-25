@@ -228,6 +228,10 @@ textarea {
   line-height: 1.2;
 }
 
+.app-title {
+  white-space: nowrap;
+}
+
 .subtitle {
   font-size: var(--font-subtitle);
   color: #777;
@@ -640,6 +644,18 @@ textarea {
   .camera-wrapper,
   .upload-area {
     max-width: 420px;
+  }
+}
+
+@media (max-width: 430px) {
+  .app-title {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 360px) {
+  .app-title {
+    font-size: 22px;
   }
 }
 
